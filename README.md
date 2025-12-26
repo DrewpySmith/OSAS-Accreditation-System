@@ -216,7 +216,7 @@ file_uploads = On
 ## Initial Setup
 
 ### 1. Access the Application
-Open your browser and navigate to `http://your-domain.com`
+Open your browser and navigate to `(http://localhost:8080/index.php/login)`
 
 ### 2. Create Admin Account
 The system will prompt you to create the first administrator account.
@@ -329,25 +329,11 @@ This software is licensed under the MIT License. See `LICENSE.md` for details.
 
 ## Credits
 
-Developed by [Your Organization Name]
+Developed by Aejer Theranz D. Balayon and Joshua Gelbolingo
 Framework: CodeIgniter 4
 UI Framework: Bootstrap 5
 Chart Library: Chart.js
 
----
+This
 
-## Quick Start Checklist
 
-- [ ] Server requirements met
-- [ ] Database created
-- [ ] Application files uploaded
-- [ ] Environment configured
-- [ ] Database migrated
-- [ ] File permissions set
-- [ ] Web server configured
-- [ ] SSL certificate installed
-- [ ] Admin account created
-- [ ] Organizations registered
-- [ ] System tested
-
-For additional assistance, please contact the technical support team.
