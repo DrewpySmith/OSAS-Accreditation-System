@@ -318,11 +318,6 @@ tar -czf files_backup_$(date +%Y%m%d).tar.gz writable/uploads/
 - Admin Guide: `/docs/admin-guide.pdf`
 - API Documentation: `/docs/api/`
 
-### Technical Support
-- Email: support@your-domain.com
-- Phone: +63 XXX XXX XXXX
-- Help Desk: https://help.your-domain.com
-
 ## License
 
 This software is licensed under the MIT License. See `LICENSE.md` for details.
