@@ -329,7 +329,20 @@ This software is licensed under the MIT License. See `LICENSE.md` for details.
 
 ## Credits
 
-Developed by [Your Organization Name]
+- Developed by Aejer Theranz D. Balayon and Joshua Gelbolingo
+
+## Members
+
+- Balayon, Aejer Theranz D.
+- Gelbolingo, Joshua Rey M.
+- Alcarde, Jershon Cris U.
+- Felongco, Ken Chester I.
+- Camat, Christine Mae M.
+- Camat, Krizel Joy M.
+- Caducoy, Sheena Mae B.
+- Natividad, Jhomel G.
+- Malakad, Jann Lemor M.
+
 Framework: CodeIgniter 4
 UI Framework: Bootstrap 5
 Chart Library: Chart.js
