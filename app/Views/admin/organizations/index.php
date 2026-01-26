@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .navbar h1 {
@@ -107,7 +108,7 @@
             background: white;
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         table {
@@ -115,7 +116,8 @@
             border-collapse: collapse;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
@@ -188,6 +190,7 @@
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <h1>USG Accreditation - Admin Panel</h1>
@@ -201,7 +204,7 @@
     </nav>
 
     <div class="container">
-        
+
 
         <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success">
@@ -217,9 +220,25 @@
 
         <div class="page-header">
             <h2>Manage Organizations</h2>
-            <a href="<?= base_url('admin/organizations/create') ?>" class="btn btn-primary">
-                + Create New Organization
-            </a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <form action="<?= base_url('admin/organizations') ?>" method="get" id="filterForm">
+                    <select name="campus" onchange="this.form.submit()"
+                        style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="">All Campuses</option>
+                        <?php foreach ($campuses as $campus): ?>
+                            <option value="<?= $campus ?>" <?= ($selected_campus == $campus) ? 'selected' : '' ?>>
+                                <?= $campus ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+                <a href="<?= base_url('admin/organizations/print' . (!empty($selected_campus) ? '?campus=' . $selected_campus : '')) ?>"
+                    target="_blank" class="btn btn-success">
+                    ⎙ Print List
+                </a>
+                <a href="<?= base_url('admin/organizations/create') ?>" class="btn btn-primary">
+                    + Create New Organization
+                </a>
+            </div>
         </div>
 
         <div class="card">
@@ -229,6 +248,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Acronym</th>
+                        <th>Campus</th>
                         <th>Description</th>
                         <th>Status</th>
                         <th>Created Date</th>
@@ -248,6 +268,8 @@
                                 <td><?= $org['id'] ?></td>
                                 <td><strong><?= esc($org['name']) ?></strong></td>
                                 <td><?= esc($org['acronym']) ?></td>
+                                <td><span style="color: #27ae60; font-weight: 500;"><?= esc($org['campus'] ?? 'N/A') ?></span>
+                                </td>
                                 <td><?= esc($org['description']) ?></td>
                                 <td>
                                     <span class="badge badge-<?= $org['status'] ?>">
@@ -257,14 +279,14 @@
                                 <td><?= date('M d, Y', strtotime($org['created_at'])) ?></td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a href="<?= base_url('admin/organizations/view/' . $org['id']) ?>" 
-                                           class="btn btn-success btn-sm">View</a>
-                                        <a href="<?= base_url('admin/organizations/edit/' . $org['id']) ?>" 
-                                           class="btn btn-warning btn-sm">Edit</a>
-                                        <a href="<?= base_url('admin/organizations/delete/' . $org['id']) ?>" 
-                                           class="btn btn-danger btn-sm"
-                                           onclick="return confirm('Are you sure you want to delete this organization?')">
-                                           Delete
+                                        <a href="<?= base_url('admin/organizations/view/' . $org['id']) ?>"
+                                            class="btn btn-success btn-sm">View</a>
+                                        <a href="<?= base_url('admin/organizations/edit/' . $org['id']) ?>"
+                                            class="btn btn-warning btn-sm">Edit</a>
+                                        <a href="<?= base_url('admin/organizations/delete/' . $org['id']) ?>"
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete this organization?')">
+                                            Delete
                                         </a>
                                     </div>
                                 </td>
@@ -276,4 +298,5 @@
         </div>
     </div>
 </body>
+
 </html>

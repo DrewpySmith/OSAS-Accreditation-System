@@ -22,8 +22,14 @@ class CommitmentForm extends BaseController
     public function index()
     {
         $organizationId = session()->get('organization_id');
-        $forms = $this->commitmentModel->getByOrganization($organizationId);
+
+        $db = \Config\Database::connect();
+        $currentAY = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $currentAY ? $currentAY['year'] : date('Y') . '-' . (date('Y') + 1);
+
+        $forms = $this->commitmentModel->getByOrganization($organizationId, $academicYear);
         $selectedId = $this->request->getGet('id');
+        $isNew = $this->request->getGet('new');
 
         $selectedForm = null;
         if (!empty($selectedId)) {
@@ -33,13 +39,14 @@ class CommitmentForm extends BaseController
             }
         }
 
-        if (empty($selectedForm) && !empty($forms)) {
+        if (!$isNew && empty($selectedForm) && !empty($forms)) {
             $selectedForm = $forms[0];
         }
 
         $data['forms'] = $forms;
         $data['form'] = $selectedForm;
         $data['organization'] = $this->organizationModel->find($organizationId);
+        $data['academic_year'] = $academicYear;
 
         return view('organization/forms/commitment_form', $data);
     }
@@ -48,7 +55,14 @@ class CommitmentForm extends BaseController
     {
         $organizationId = session()->get('organization_id');
         $data['organization'] = $this->organizationModel->find($organizationId);
-        
+
+        $db = \Config\Database::connect();
+        $currentAY = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $currentAY ? $currentAY['year'] : date('Y') . '-' . (date('Y') + 1);
+
+        $data['academic_year'] = $academicYear;
+        $data['forms'] = $this->commitmentModel->getByOrganization($organizationId, $academicYear);
+
         return view('organization/forms/commitment_form', $data);
     }
 
@@ -84,7 +98,8 @@ class CommitmentForm extends BaseController
             'organization_name' => $payload['organization_name'] ?? null,
             'academic_year' => $payload['academic_year'] ?? null,
             'signed_date' => $payload['signed_date'] ?? null,
-            'status' => 'draft'
+            'status' => 'submitted',
+            'sort_order' => $this->commitmentModel->where('organization_id', session()->get('organization_id'))->where('academic_year', $payload['academic_year'] ?? '')->countAllResults()
         ];
 
         $id = $this->commitmentModel->insert($data);
@@ -112,7 +127,7 @@ class CommitmentForm extends BaseController
     public function update($id)
     {
         $form = $this->commitmentModel->find($id);
-        
+
         if (!$form || $form['organization_id'] != session()->get('organization_id')) {
             return $this->response->setJSON([
                 'success' => false,
@@ -173,7 +188,7 @@ class CommitmentForm extends BaseController
     public function download($id)
     {
         $form = $this->commitmentModel->find($id);
-        
+
         if (!$form || $form['organization_id'] != session()->get('organization_id')) {
             return redirect()->back()->with('error', 'Form not found');
         }
@@ -182,26 +197,66 @@ class CommitmentForm extends BaseController
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
-        
+
         $dompdf = new Dompdf($options);
-        
+
         $html = view('pdf/commitment_form', ['form' => $form]);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        
+
         return $dompdf->stream('commitment_form_' . $id . '.pdf', ['Attachment' => true]);
     }
 
     public function print($id)
     {
         $form = $this->commitmentModel->find($id);
-        
+
         if (!$form || $form['organization_id'] != session()->get('organization_id')) {
             return redirect()->back()->with('error', 'Form not found');
         }
 
         $data['form'] = $form;
         return view('pdf/commitment_form', $data);
+    }
+
+    public function printList()
+    {
+        $organizationId = session()->get('organization_id');
+
+        $db = \Config\Database::connect();
+        $currentAY = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $currentAY ? $currentAY['year'] : date('Y') . '-' . (date('Y') + 1);
+
+        $data['organization'] = $this->organizationModel->find($organizationId);
+        $data['forms'] = $this->commitmentModel->getByOrganization($organizationId, $academicYear);
+        $data['academic_year'] = $academicYear;
+        $data['title'] = 'Official List of Officers';
+
+        return view('organization/forms/commitment_list_print', $data);
+    }
+
+    public function reorder()
+    {
+        $payload = $this->request->getJSON(true);
+        $order = $payload['order'] ?? [];
+
+        if (empty($order)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Invalid order data']);
+        }
+
+        $organizationId = session()->get('organization_id');
+
+        foreach ($order as $index => $id) {
+            $this->commitmentModel
+                ->where('organization_id', $organizationId)
+                ->update($id, ['sort_order' => $index]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Order updated successfully',
+            'csrf' => csrf_hash()
+        ]);
     }
 }

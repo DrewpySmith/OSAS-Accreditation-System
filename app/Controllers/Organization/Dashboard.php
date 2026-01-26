@@ -8,6 +8,8 @@ use App\Models\DocumentSubmissionModel;
 use App\Models\CalendarActivityModel;
 use App\Models\FinancialReportModel;
 use App\Models\NotificationModel;
+use App\Models\OrganizationChecklistModel;
+use Config\Database;
 
 class Dashboard extends BaseController
 {
@@ -16,6 +18,7 @@ class Dashboard extends BaseController
     protected $calendarModel;
     protected $financialModel;
     protected $notificationModel;
+    protected $checklistModel;
 
     public function __construct()
     {
@@ -24,6 +27,7 @@ class Dashboard extends BaseController
         $this->calendarModel = new CalendarActivityModel();
         $this->financialModel = new FinancialReportModel();
         $this->notificationModel = new NotificationModel();
+        $this->checklistModel = new OrganizationChecklistModel();
     }
 
     public function index()
@@ -34,6 +38,10 @@ class Dashboard extends BaseController
 
         $organizationId = session()->get('organization_id');
         $userId = session()->get('user_id');
+
+        $db = Database::connect();
+        $currentAY = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $currentAY ? $currentAY['year'] : date('Y') . '-' . (date('Y') + 1);
 
         $data = [
             'organization' => $this->organizationModel->find($organizationId),
@@ -47,7 +55,10 @@ class Dashboard extends BaseController
             'reports_this_year' => $this->financialModel->where('organization_id', $organizationId)
                 ->where('academic_year', date('Y') . '-' . (date('Y') + 1))
                 ->countAllResults(),
-            'unread_count' => $this->notificationModel->getUnreadCount($userId)
+            'unread_count' => $this->notificationModel->getUnreadCount($userId),
+            'academic_year' => $academicYear,
+            'checklist' => $this->checklistModel->getByOrgAndYear($organizationId, $academicYear),
+            'document_types' => \App\Models\DocumentSubmissionModel::DOCUMENT_TYPES
         ];
 
         return view('organization/dashboard', $data);

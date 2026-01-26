@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .navbar h1 {
@@ -40,7 +41,7 @@
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .card h2 {
@@ -167,6 +168,7 @@
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <h1>USG Accreditation - Create Organization</h1>
@@ -194,48 +196,53 @@
                 <!-- Organization Information -->
                 <div class="form-group">
                     <label>Organization Name <span class="required">*</span></label>
-                    <input type="text" name="name" required 
-                           value="<?= old('name') ?>" 
-                           placeholder="e.g., Computer Science Society">
+                    <input type="text" name="name" required value="<?= old('name') ?>"
+                        placeholder="e.g., Computer Science Society">
                 </div>
 
                 <div class="form-group">
                     <label>Acronym</label>
-                    <input type="text" name="acronym" 
-                           value="<?= old('acronym') ?>" 
-                           placeholder="e.g., CSS">
+                    <input type="text" name="acronym" value="<?= old('acronym') ?>" placeholder="e.g., CSS">
                     <div class="help-text">Short name or abbreviation (optional)</div>
                 </div>
 
                 <div class="form-group">
+                    <label>Campus <span class="required">*</span></label>
+                    <select name="campus" required>
+                        <option value="">Select Campus</option>
+                        <?php foreach ($campuses as $campus): ?>
+                            <option value="<?= $campus ?>" <?= old('campus') == $campus ? 'selected' : '' ?>><?= $campus ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" 
-                              placeholder="Brief description of the organization"><?= old('description') ?></textarea>
+                    <textarea name="description"
+                        placeholder="Brief description of the organization"><?= old('description') ?></textarea>
                 </div>
 
                 <!-- Account Information -->
                 <div class="form-section">
                     <h3>Account Information</h3>
-                    
+
                     <div class="form-group">
                         <label>Username <span class="required">*</span></label>
-                        <input type="text" name="username" required 
-                               value="<?= old('username') ?>" 
-                               placeholder="Login username">
+                        <input type="text" name="username" required value="<?= old('username') ?>"
+                            placeholder="Login username">
                         <div class="help-text">Must be unique. This will be used to login.</div>
                     </div>
 
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
-                        <input type="password" name="password" required 
-                               placeholder="Create a strong password">
+                        <input type="password" name="password" required placeholder="Create a strong password">
                         <div class="help-text">Minimum 6 characters</div>
                     </div>
 
                     <div class="form-group">
                         <label>Confirm Password <span class="required">*</span></label>
-                        <input type="password" name="confirm_password" required 
-                               placeholder="Re-enter password">
+                        <input type="password" name="confirm_password" required placeholder="Re-enter password">
                     </div>
                 </div>
 
@@ -249,7 +256,7 @@
 
     <script>
         // Form validation
-        document.querySelector('form').addEventListener('submit', function(e) {
+        document.querySelector('form').addEventListener('submit', function (e) {
             const password = document.querySelector('input[name="password"]').value;
             const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
 
@@ -267,4 +274,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,25 +12,30 @@
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
         }
+
         .card {
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             color: #2c3e50;
             font-weight: 600;
         }
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -39,10 +45,12 @@
             border-radius: 5px;
             font-family: inherit;
         }
+
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
+
         .btn {
             padding: 12px 30px;
             border: none;
@@ -52,20 +60,34 @@
             display: inline-block;
             font-size: 16px;
         }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .required { color: #dc3545; }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
         .help-text {
             font-size: 12px;
             color: #7f8c8d;
             margin-top: 5px;
         }
+
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
             display: inline-block;
             width: 100%;
         }
+
         .file-input-wrapper input[type=file] {
             font-size: 100px;
             position: absolute;
@@ -74,6 +96,7 @@
             opacity: 0;
             cursor: pointer;
         }
+
         .file-input-label {
             display: block;
             padding: 40px;
@@ -84,15 +107,18 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .file-input-label:hover {
             border-color: #007bff;
             background: #e7f3ff;
         }
+
         .alert {
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
         }
+
         .alert-error {
             background: #f8d7da;
             color: #721c24;
@@ -100,6 +126,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="card">
@@ -117,40 +144,36 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= base_url('organization/submissions/upload') ?>" method="POST" enctype="multipart/form-data">
+            <form action="<?= base_url('organization/submissions/upload') ?>" method="POST"
+                enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <div class="form-group">
                     <label>Document Type <span class="required">*</span></label>
                     <select name="document_type" required>
                         <option value="">-- Select Document Type --</option>
-                        <option value="commitment_form">Commitment Form</option>
-                        <option value="calendar_activities">Calendar of Activities</option>
-                        <option value="program_expenditure">Program of Expenditure</option>
-                        <option value="accomplishment_report">Accomplishment Report</option>
-                        <option value="financial_report">Financial Report</option>
-                        <option value="other">Other</option>
+                        <?php foreach (($document_types ?? []) as $val => $label): ?>
+                            <option value="<?= esc($val) ?>"><?= esc($label) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Document Title <span class="required">*</span></label>
-                    <input type="text" name="document_title" required 
-                           placeholder="e.g., Financial Report Q3 2024" 
-                           value="<?= old('document_title') ?>">
+                    <input type="text" name="document_title" required placeholder="e.g., Financial Report Q3 2024"
+                        value="<?= old('document_title') ?>">
                     <div class="help-text">Give your document a descriptive title</div>
                 </div>
 
                 <div class="form-group">
                     <label>Academic Year <span class="required">*</span></label>
-                    <input type="text" name="academic_year" required 
-                           placeholder="e.g., 2024-2025" 
-                           value="<?= old('academic_year') ?>">
+                    <input type="text" name="academic_year" required placeholder="e.g., 2024-2025"
+                        value="<?= old('academic_year') ?>">
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" 
-                              placeholder="Add any notes or comments about this document"><?= old('description') ?></textarea>
+                    <textarea name="description"
+                        placeholder="Add any notes or comments about this document"><?= old('description') ?></textarea>
                 </div>
 
                 <div class="form-group">
@@ -173,7 +196,8 @@
             </form>
         </div>
 
-        <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div
+            style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <h3>📝 Submission Guidelines:</h3>
             <ul style="color: #7f8c8d;">
                 <li>Ensure your document is properly formatted and complete</li>
@@ -187,7 +211,7 @@
     </div>
 
     <script>
-        document.getElementById('document_file').addEventListener('change', function(e) {
+        document.getElementById('document_file').addEventListener('change', function (e) {
             const fileName = e.target.files[0]?.name;
             if (fileName) {
                 document.getElementById('file-name').textContent = 'Selected: ' + fileName;
@@ -195,4 +219,5 @@
         });
     </script>
 </body>
+
 </html>

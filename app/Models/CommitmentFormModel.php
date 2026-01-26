@@ -20,7 +20,8 @@ class CommitmentFormModel extends Model
         'academic_year',
         'signed_date',
         'signature',
-        'status'
+        'status',
+        'sort_order'
     ];
 
     protected bool $allowEmptyInserts = false;
@@ -47,12 +48,12 @@ class CommitmentFormModel extends Model
     public function getByOrganization($organizationId, $academicYear = null)
     {
         $builder = $this->where('organization_id', $organizationId);
-        
+
         if ($academicYear) {
             $builder->where('academic_year', $academicYear);
         }
-        
-        return $builder->orderBy('created_at', 'DESC')->findAll();
+
+        return $builder->orderBy('sort_order', 'ASC')->orderBy('created_at', 'DESC')->findAll();
     }
 
     public function getByOrganizationAndYear($organizationId, $academicYear)

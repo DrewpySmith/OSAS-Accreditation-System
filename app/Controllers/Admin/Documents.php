@@ -32,11 +32,11 @@ class Documents extends BaseController
     public function index()
     {
         $filters = [];
-        
+
         if ($this->request->getGet('organization_id')) {
             $filters['organization_id'] = $this->request->getGet('organization_id');
         }
-        
+
         if ($this->request->getGet('document_type')) {
             $filters['document_type'] = $this->request->getGet('document_type');
         }
@@ -45,16 +45,31 @@ class Documents extends BaseController
             $filters['status'] = $this->request->getGet('status');
         }
 
+        if ($this->request->getGet('campus')) {
+            $filters['campus'] = $this->request->getGet('campus');
+        }
+
+        if ($this->request->getGet('academic_year')) {
+            $filters['academic_year'] = $this->request->getGet('academic_year');
+        }
+
         $data['documents'] = $this->documentModel->getAllSubmissions($filters);
         $data['organizations'] = $this->organizationModel->findAll();
-        
+        $db = \Config\Database::connect();
+        $data['academic_years'] = $db->table('academic_years')->orderBy('year', 'DESC')->get()->getResultArray();
+        $data['campuses'] = OrganizationModel::CAMPUSES;
+        $data['selected_filters'] = $filters;
+
+        // Unified document types from model
+        $data['document_types'] = DocumentSubmissionModel::DOCUMENT_TYPES;
+
         return view('admin/documents/index', $data);
     }
 
     public function view($id)
     {
         $data['document'] = $this->documentModel->getDocumentWithComments($id);
-        
+
         if (!$data['document']) {
             return redirect()->to('/admin/documents')->with('error', 'Document not found');
         }
@@ -75,7 +90,7 @@ class Documents extends BaseController
     public function download($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document) {
             return $this->response
                 ->setStatusCode(404)
@@ -84,7 +99,7 @@ class Documents extends BaseController
         }
 
         $filePath = WRITEPATH . 'uploads/' . $document['file_path'];
-        
+
         if (!file_exists($filePath)) {
             return $this->response
                 ->setStatusCode(404)
@@ -98,7 +113,7 @@ class Documents extends BaseController
     public function preview($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document) {
             return $this->response
                 ->setStatusCode(404)
@@ -107,7 +122,7 @@ class Documents extends BaseController
         }
 
         $filePath = WRITEPATH . 'uploads/' . $document['file_path'];
-        
+
         if (!file_exists($filePath)) {
             return $this->response
                 ->setStatusCode(404)
@@ -212,7 +227,7 @@ class Documents extends BaseController
     public function addComment($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document) {
             return $this->response->setJSON([
                 'success' => false,
@@ -223,7 +238,7 @@ class Documents extends BaseController
 
         $payload = $this->request->getJSON(true);
         $commentText = $payload['comment'] ?? $this->request->getPost('comment');
-        
+
         if (empty($commentText)) {
             return $this->response->setJSON([
                 'success' => false,
@@ -256,7 +271,7 @@ class Documents extends BaseController
     public function updateStatus($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document) {
             return $this->response->setJSON([
                 'success' => false,
@@ -276,7 +291,7 @@ class Documents extends BaseController
                 'csrf' => csrf_hash()
             ]);
         }
-        
+
         $fromStatus = $document['status'] ?? null;
 
         $data = [
@@ -321,5 +336,24 @@ class Documents extends BaseController
             'message' => 'Failed to update document status',
             'csrf' => csrf_hash()
         ]);
+    }
+
+    public function printDocs()
+    {
+        $filters = [];
+        if ($this->request->getGet('organization_id'))
+            $filters['organization_id'] = $this->request->getGet('organization_id');
+        if ($this->request->getGet('document_type'))
+            $filters['document_type'] = $this->request->getGet('document_type');
+        if ($this->request->getGet('status'))
+            $filters['status'] = $this->request->getGet('status');
+        if ($this->request->getGet('campus'))
+            $filters['campus'] = $this->request->getGet('campus');
+
+        $data['documents'] = $this->documentModel->getAllSubmissions($filters);
+        $data['title'] = 'Document Submissions' . (!empty($filters['campus']) ? ' - ' . $filters['campus'] . ' Campus' : '');
+        $data['selected_campus'] = $filters['campus'] ?? '';
+
+        return view('admin/documents/print', $data);
     }
 }

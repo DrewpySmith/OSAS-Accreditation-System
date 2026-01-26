@@ -23,13 +23,15 @@ class DocumentSubmission extends BaseController
         $organizationId = session()->get('organization_id');
         $data['documents'] = $this->documentModel->getByOrganization($organizationId);
         $data['organization'] = $this->organizationModel->find($organizationId);
-        
+        $data['document_types'] = DocumentSubmissionModel::DOCUMENT_TYPES;
+
         return view('organization/submissions/index', $data);
     }
 
     public function uploadForm()
     {
         $data['organization'] = $this->organizationModel->find(session()->get('organization_id'));
+        $data['document_types'] = DocumentSubmissionModel::DOCUMENT_TYPES;
         return view('organization/submissions/upload', $data);
     }
 
@@ -60,15 +62,8 @@ class DocumentSubmission extends BaseController
     {
         $validation = \Config\Services::validation();
 
-        $allowedTypes = [
-            'commitment_form',
-            'calendar_activities',
-            'program_expenditure',
-            'accomplishment_report',
-            'financial_report',
-            'other'
-        ];
-        
+        $allowedTypes = array_keys(DocumentSubmissionModel::DOCUMENT_TYPES);
+
         $rules = [
             'document_type' => 'required',
             'document_title' => 'required|min_length[3]',
@@ -83,7 +78,7 @@ class DocumentSubmission extends BaseController
         $file = $this->request->getFile('document_file');
         $organizationId = session()->get('organization_id');
 
-        $documentType = (string) $this->request->getPost('document_type');
+        $documentType = trim((string) $this->request->getPost('document_type'));
         if (!in_array($documentType, $allowedTypes, true)) {
             return redirect()->back()->withInput()->with('errors', ['Invalid document type']);
         }
@@ -96,8 +91,11 @@ class DocumentSubmission extends BaseController
         }
 
         if ($file->isValid() && !$file->hasMoved()) {
+            $org = $this->organizationModel->find($organizationId);
+            $campus = $org['campus'] ?? null;
+
             $uploadPath = WRITEPATH . 'uploads/documents/' . $organizationId . '/' . $documentType . '/' . $safeAcademicYear . '/';
-            
+
             if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0777, true);
             }
@@ -107,6 +105,7 @@ class DocumentSubmission extends BaseController
 
             $data = [
                 'organization_id' => $organizationId,
+                'campus' => $campus,
                 'document_type' => $documentType,
                 'document_title' => $this->request->getPost('document_title'),
                 'file_path' => 'documents/' . $organizationId . '/' . $documentType . '/' . $safeAcademicYear . '/' . $newName,
@@ -131,13 +130,13 @@ class DocumentSubmission extends BaseController
     public function download($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document || $document['organization_id'] != session()->get('organization_id')) {
             return redirect()->back()->with('error', 'Document not found');
         }
 
         $filePath = WRITEPATH . 'uploads/' . $document['file_path'];
-        
+
         if (!file_exists($filePath)) {
             return redirect()->back()->with('error', 'File not found');
         }
@@ -148,7 +147,7 @@ class DocumentSubmission extends BaseController
     public function delete($id)
     {
         $document = $this->documentModel->find($id);
-        
+
         if (!$document || $document['organization_id'] != session()->get('organization_id')) {
             return redirect()->back()->with('error', 'Document not found');
         }

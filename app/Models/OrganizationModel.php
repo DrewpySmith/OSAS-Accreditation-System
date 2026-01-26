@@ -15,6 +15,7 @@ class OrganizationModel extends Model
     protected $allowedFields = [
         'name',
         'acronym',
+        'campus',
         'description',
         'status'
     ];
@@ -31,9 +32,20 @@ class OrganizationModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
+    public const CAMPUSES = [
+        'Palimbang',
+        'Isulan',
+        'Access',
+        'Tacurong',
+        'Lutayan',
+        'Bagumbayan',
+        'Kalamansig'
+    ];
+
     // Validation
     protected $validationRules = [
         'name' => 'required|min_length[3]|max_length[255]',
+        'campus' => 'required|in_list[Palimbang,Isulan,Access,Tacurong,Lutayan,Bagumbayan,Kalamansig]',
         'status' => 'required|in_list[active,inactive,suspended]',
     ];
     protected $validationMessages = [];
@@ -65,15 +77,15 @@ class OrganizationModel extends Model
 
         // Get statistics
         $db = \Config\Database::connect();
-        
+
         $org['total_documents'] = $db->table('document_submissions')
             ->where('organization_id', $id)
             ->countAllResults();
-        
+
         $org['total_activities'] = $db->table('calendar_activities')
             ->where('organization_id', $id)
             ->countAllResults();
-        
+
         $org['total_financial_reports'] = $db->table('financial_reports')
             ->where('organization_id', $id)
             ->countAllResults();

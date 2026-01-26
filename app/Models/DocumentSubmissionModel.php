@@ -6,6 +6,19 @@ use CodeIgniter\Model;
 
 class DocumentSubmissionModel extends Model
 {
+    public const DOCUMENT_TYPES = [
+        'application_letter' => 'Application Letter Form',
+        'officer_list' => 'Lists of Officers',
+        'commitment_forms' => 'Commitment Forms of Officers and Advisers',
+        'constitution_bylaws' => 'Constitution and By-Laws',
+        'org_structure' => 'Organizational Structure',
+        'calendar_activities' => 'Plan and Calendar of Activities',
+        'financial_report' => 'Audited Financial Report',
+        'program_expenditures' => 'Program of Expenditures',
+        'accomplishment_report' => 'Accomplishment Reports',
+        'other' => 'Other Documents'
+    ];
+
     protected $table = 'document_submissions';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
@@ -14,6 +27,7 @@ class DocumentSubmissionModel extends Model
     protected $protectFields = true;
     protected $allowedFields = [
         'organization_id',
+        'campus',
         'document_type',
         'document_title',
         'file_path',
@@ -86,6 +100,14 @@ class DocumentSubmissionModel extends Model
 
         if (isset($filters['status'])) {
             $builder->where('document_submissions.status', $filters['status']);
+        }
+
+        if (isset($filters['campus'])) {
+            $builder->where('document_submissions.campus', $filters['campus']);
+        }
+
+        if (isset($filters['academic_year'])) {
+            $builder->where('document_submissions.academic_year', $filters['academic_year']);
         }
 
         return $builder->orderBy('document_submissions.created_at', 'DESC')->findAll();
