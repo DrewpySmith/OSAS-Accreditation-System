@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# Fix "More than one MPM loaded" error by explicitly managing MPMs
+# php-apache usually requires mpm_prefork
+RUN a2dismod mpm_event mpm_worker || true && \
+    a2enmod mpm_prefork
+
 # Install PHP extensions required by CodeIgniter 4
 RUN docker-php-ext-install intl mysqli gd zip
 
