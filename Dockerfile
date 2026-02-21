@@ -10,13 +10,6 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix "More than one MPM loaded" error by forcing only prefork to be enabled
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && \
-    ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load && \
-    ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
-
-
-
 # Install PHP extensions required by CodeIgniter 4
 RUN docker-php-ext-install intl mysqli gd zip
 
@@ -42,10 +35,8 @@ RUN chown -R www-data:www-data /var/www/html/writable && \
 # Use the production php.ini
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Railway provides the PORT environment variable. 
-# We configure Apache to listen on this port dynamically.
-RUN sed -i "s/Listen 80/Listen \${PORT}/g" /etc/apache2/ports.conf && \
-    sed -i "s/<VirtualHost \*:80>/<VirtualHost *:\${PORT}>/g" /etc/apache2/sites-available/*.conf
+# Railway provides the PORT environment variable.
+# We configure Apache to listen on this port dynamically by replacing all instances of 80.
+RUN sed -i "s/80/\${PORT}/g" /etc/apache2/conf-available/docker-php.conf /etc/apache2/sites-available/*.conf /etc/apache2/ports.conf
 
 EXPOSE 80
-
