@@ -40,5 +40,10 @@ RUN chown -R www-data:www-data /var/www/html/writable && \
 # Use the production php.ini
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Railway provides the PORT environment variable
+# Railway provides the PORT environment variable. 
+# We configure Apache to listen on this port dynamically.
+RUN sed -i "s/Listen 80/Listen \${PORT}/g" /etc/apache2/ports.conf && \
+    sed -i "s/<VirtualHost \*:80>/<VirtualHost *:\${PORT}>/g" /etc/apache2/sites-available/*.conf
+
 EXPOSE 80
+
