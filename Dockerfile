@@ -10,10 +10,11 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix "More than one MPM loaded" error by explicitly managing MPMs
-# php-apache usually requires mpm_prefork
-RUN a2dismod mpm_event mpm_worker || true
-RUN a2enmod mpm_prefork
+# Fix "More than one MPM loaded" error by forcing only prefork to be enabled
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
+
 
 
 # Install PHP extensions required by CodeIgniter 4
