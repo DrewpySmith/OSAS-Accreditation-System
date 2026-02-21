@@ -32,18 +32,7 @@ class Accreditation extends BaseController
         $checklist = $this->checklistModel->getByOrgAndYear($organizationId, $academicYear);
 
         // Calculate Progress
-        $progress = 0;
-        $requiredFields = array_keys(\App\Models\DocumentSubmissionModel::DOCUMENT_TYPES);
-
-        if ($checklist) {
-            $completedCount = 0;
-            foreach ($requiredFields as $field) {
-                if (isset($checklist[$field]) && $checklist[$field] == 1) {
-                    $completedCount++;
-                }
-            }
-            $progress = round(($completedCount / count($requiredFields)) * 100);
-        }
+        $progress = $this->checklistModel->calculateProgress($checklist);
 
         $data = [
             'organization' => $organization,

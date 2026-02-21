@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - USG Accreditation</title>
+    <link rel="icon" href="<?= base_url('webco.png') ?>" type="image/png">
     <link rel="stylesheet" href="<?= base_url('css/admin.css') ?>">
     <style>
         * {
@@ -24,7 +26,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .navbar h1 {
@@ -70,7 +72,7 @@
             background: white;
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card h3 {
@@ -85,10 +87,21 @@
             color: #2c3e50;
         }
 
-        .stat-card.blue { border-left: 4px solid #3498db; }
-        .stat-card.green { border-left: 4px solid #2ecc71; }
-        .stat-card.orange { border-left: 4px solid #f39c12; }
-        .stat-card.red { border-left: 4px solid #e74c3c; }
+        .stat-card.blue {
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card.green {
+            border-left: 4px solid #2ecc71;
+        }
+
+        .stat-card.orange {
+            border-left: 4px solid #f39c12;
+        }
+
+        .stat-card.red {
+            border-left: 4px solid #e74c3c;
+        }
 
         .menu-grid {
             display: grid;
@@ -101,7 +114,7 @@
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             text-decoration: none;
             color: #2c3e50;
@@ -110,7 +123,7 @@
 
         .menu-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
         }
 
         .menu-card .icon {
@@ -126,7 +139,7 @@
             background: white;
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .recent-section h2 {
@@ -139,7 +152,8 @@
             border-collapse: collapse;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
@@ -158,12 +172,28 @@
             font-weight: 600;
         }
 
-        .badge-pending { background: #fff3cd; color: #856404; }
-        .badge-reviewed { background: #cce5ff; color: #004085; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-reviewed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <h1>USG Accreditation System - Admin</h1>
@@ -244,8 +274,8 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="<?= base_url('admin/documents/view/' . $submission['id']) ?>" 
-                                       style="color: #3498db; text-decoration: none;">View</a>
+                                    <a href="<?= base_url('admin/documents/view/' . $submission['id']) ?>"
+                                        style="color: #3498db; text-decoration: none;">View</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -255,4 +285,5 @@
         </div>
     </div>
 </body>
+
 </html>

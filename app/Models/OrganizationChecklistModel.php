@@ -26,6 +26,18 @@ class OrganizationChecklistModel extends Model
         'accomplishment_report'
     ];
 
+    public const REQUIRED_FIELDS = [
+        'application_letter',
+        'officer_list',
+        'commitment_forms',
+        'constitution_bylaws',
+        'org_structure',
+        'calendar_activities',
+        'financial_report',
+        'program_expenditures',
+        'accomplishment_report'
+    ];
+
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
     protected $createdField = 'created_at';
@@ -43,24 +55,28 @@ class OrganizationChecklistModel extends Model
         if (!$checklist)
             return false;
 
-        $requiredFields = [
-            'application_letter',
-            'officer_list',
-            'commitment_forms',
-            'constitution_bylaws',
-            'org_structure',
-            'calendar_activities',
-            'financial_report',
-            'program_expenditures',
-            'accomplishment_report'
-        ];
-
-        foreach ($requiredFields as $field) {
+        foreach (self::REQUIRED_FIELDS as $field) {
             if (!isset($checklist[$field]) || $checklist[$field] != 1) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public function calculateProgress($checklist)
+    {
+        if (!$checklist) {
+            return 0;
+        }
+
+        $completedCount = 0;
+        foreach (self::REQUIRED_FIELDS as $field) {
+            if (isset($checklist[$field]) && $checklist[$field] == 1) {
+                $completedCount++;
+            }
+        }
+
+        return round(($completedCount / count(self::REQUIRED_FIELDS)) * 100);
     }
 }

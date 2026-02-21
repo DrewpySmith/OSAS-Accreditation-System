@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USG Accreditation System - Login</title>
+    <link rel="icon" href="<?= base_url('webco.png') ?>" type="image/png">
     <style>
         * {
             margin: 0;
@@ -126,6 +128,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="logo-section">
@@ -167,4 +170,5 @@
         </div>
     </div>
 </body>
+
 </html>
