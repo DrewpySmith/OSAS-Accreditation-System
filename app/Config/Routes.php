@@ -114,8 +114,8 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     $routes->post('financial-report/store', 'Organization\FinancialReport::store');
     $routes->get('financial-report/tracking', 'Organization\FinancialReport::tracking');
     $routes->post('financial-report/comparison', 'Organization\FinancialReport::comparison');
-    $routes->get('financial-report/download/(:num)', 'Organization\FinancialReport::download/$1');
-    $routes->get('financial-report/print/(:num)', 'Organization\FinancialReport::print/$1');
+    $routes->get('financial-report/download/(:segment)', 'Organization\FinancialReport::download/$1');
+    $routes->get('financial-report/print/(:segment)', 'Organization\FinancialReport::print/$1');
 
     // Document Submissions
     $routes->get('submissions', 'Organization\DocumentSubmission::index');

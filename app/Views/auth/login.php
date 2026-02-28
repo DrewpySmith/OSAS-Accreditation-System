@@ -133,7 +133,7 @@
     <div class="login-container">
         <div class="logo-section">
             <img class="seal" src="<?= base_url('SKSU_Official_Seal.png') ?>" alt="SKSU Official Seal">
-            <h1>SKSU USG</h1>
+            <h1>SKSU</h1>
             <p>Accreditation System</p>
         </div>
 
