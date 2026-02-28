@@ -155,7 +155,7 @@ class FinancialReport extends BaseController
     {
         $organizationId = session()->get('organization_id');
         $years = $this->financialModel->getAllYears($organizationId);
-        
+
         $data['reports'] = $this->financialModel->getYearlyComparison($organizationId, $years);
         $data['years'] = $years;
         $data['organization'] = $this->organizationModel->find($organizationId);
@@ -199,11 +199,12 @@ class FinancialReport extends BaseController
         ]);
     }
 
-    public function download($id)
+    public function download($academicYear)
     {
-        $report = $this->financialModel->find($id);
-        
-        if (!$report || $report['organization_id'] != session()->get('organization_id')) {
+        $organizationId = session()->get('organization_id');
+        $report = $this->financialModel->getByOrganizationAndYear($organizationId, $academicYear);
+
+        if (!$report) {
             return redirect()->back()->with('error', 'Report not found');
         }
 
@@ -213,22 +214,23 @@ class FinancialReport extends BaseController
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
-        
+
         $dompdf = new Dompdf($options);
-        
+
         $html = view('pdf/financial_report', ['report' => $report]);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        
+
         return $dompdf->stream('financial_report_' . $report['academic_year'] . '.pdf', ['Attachment' => true]);
     }
 
-    public function print($id)
+    public function print($academicYear)
     {
-        $report = $this->financialModel->find($id);
+        $organizationId = session()->get('organization_id');
+        $report = $this->financialModel->getByOrganizationAndYear($organizationId, $academicYear);
 
-        if (!$report || $report['organization_id'] != session()->get('organization_id')) {
+        if (!$report) {
             return redirect()->back()->with('error', 'Report not found');
         }
 
