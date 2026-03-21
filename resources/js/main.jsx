@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import UploadModal from './components/UploadModal';
 import OrganizationsList from './components/OrganizationsList';
+import StatisticsOrgCards from './components/StatisticsOrgCards';
 import '../css/app.css';
 
 // Guard against double-initialization (can happen with Vite chunks)
@@ -73,6 +74,21 @@ if (window.__osasInitialized) {
         ReactDOM.createRoot(listRoot).render(
             <ErrorBoundary>
                 <OrganizationsList {...props} />
+            </ErrorBoundary>
+        );
+    }
+
+    // Mount StatisticsOrgCards (Admin Statistics page)
+    const statsCardsRoot = document.getElementById('react-statistics-org-cards');
+    if (statsCardsRoot && !statsCardsRoot._reactRootContainer) {
+        const propsRaw = statsCardsRoot.getAttribute('data-props');
+        let statsProps = {};
+        if (propsRaw) {
+            try { statsProps = JSON.parse(propsRaw); } catch (e) { console.error('Failed to parse StatisticsOrgCards props:', e); }
+        }
+        ReactDOM.createRoot(statsCardsRoot).render(
+            <ErrorBoundary>
+                <StatisticsOrgCards {...statsProps} />
             </ErrorBoundary>
         );
     }

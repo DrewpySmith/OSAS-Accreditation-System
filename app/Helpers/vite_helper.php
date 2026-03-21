@@ -27,6 +27,18 @@ if (!function_exists('vite_assets')) {
 
         if ($isDev) {
             $tags = "<script type=\"module\" src=\"{$devServerUrl}/@vite/client\"></script>";
+            
+            // React Refresh Preamble for development
+            $tags .= "
+                <script type=\"module\">
+                    import RefreshRuntime from '{$devServerUrl}/@react-refresh'
+                    RefreshRuntime.injectIntoGlobalHook(window)
+                    window.\$RefreshReg$ = () => {}
+                    window.\$RefreshSig$ = () => (type) => type
+                    window.__vite_plugin_react_preamble_installed__ = true
+                </script>
+            ";
+
             if (is_array($entry)) {
                 foreach ($entry as $e) {
                     $tags .= "<script type=\"module\" src=\"{$devServerUrl}/{$e}\"></script>";

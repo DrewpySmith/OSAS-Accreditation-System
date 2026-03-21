@@ -79,6 +79,50 @@ class Statistics extends BaseController
         return view('admin/statistics/organization_view', $data);
     }
 
+    public function organizationData($id)
+    {
+        $organization = $this->organizationModel->find($id);
+        
+        if (!$organization) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Organization not found', 'csrf' => csrf_hash()]);
+        }
+
+        $years         = $this->financialModel->getAllYears($id);
+        $calendarYears = $this->calendarActivityModel->getAllYears($id);
+        $firstYear     = !empty($years) ? $years[0] : null;
+        $calFirstYear  = !empty($calendarYears) ? $calendarYears[0] : null;
+
+        $commitmentForms = $this->commitmentModel->getByOrganization($id);
+        $financialReports = $this->financialModel->getYearlyComparison($id);
+        $expenditureSummary = $this->expenditureModel->getYearlySummary($id);
+        $approvedFinancialDocs = $this->documentModel->getApprovedByOrganizationAndType($id, 'financial_report');
+
+        // Format dates for JSON output
+        $formattedCF = array_map(function($cf) {
+            $cf['signed_date_formatted'] = !empty($cf['signed_date']) ? date('M d, Y', strtotime($cf['signed_date'])) : '';
+            return $cf;
+        }, $commitmentForms);
+
+        $formattedDocs = array_map(function($doc) {
+            $doc['created_at_formatted'] = !empty($doc['created_at']) ? date('M d, Y', strtotime($doc['created_at'])) : '';
+            return $doc;
+        }, $approvedFinancialDocs);
+
+        return $this->response->setJSON([
+            'success'           => true,
+            'organization'      => $organization,
+            'years'             => $years,
+            'calendar_years'    => $calendarYears,
+            'first_year'        => $firstYear,
+            'cal_first_year'    => $calFirstYear,
+            'commitment_forms'  => $formattedCF,
+            'financial_reports' => $financialReports,
+            'expenditure_summary' => $expenditureSummary,
+            'approved_financial_report_documents' => $formattedDocs,
+            'csrf'              => csrf_hash(),
+        ]);
+    }
+
     public function comparison()
     {
         $payload = $this->request->getJSON(true);

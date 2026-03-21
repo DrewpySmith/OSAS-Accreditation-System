@@ -15,6 +15,7 @@ $isActive = function (string $segment) use ($currentUri): bool {
     </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
     <meta name="<?= csrf_header() ?>" content="<?= csrf_hash() ?>">
     <?= helper('vite');
     echo vite_assets(['resources/js/main.jsx', 'resources/css/app.css']); ?>
@@ -78,8 +79,9 @@ $isActive = function (string $segment) use ($currentUri): bool {
             <!-- Logo & Toggle -->
             <div class="h-16 flex items-center px-6 border-b sidebar-header-logo relative">
                 <div
-                    class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24"
+                    class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg flex-shrink-0"
+                    style="width: 32px; height: 32px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" width="20" height="20" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 01.75 12c0 6.213 4.963 11.25 11.25 11.25s11.25-5.037 11.25-11.25c0-2.396-.754-4.62-2.046-6.448A11.963 11.963 0 0112 2.714z" />

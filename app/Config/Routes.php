@@ -58,6 +58,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     // Statistics
     $routes->get('statistics', 'Admin\Statistics::index');
     $routes->get('statistics/organization/(:num)', 'Admin\Statistics::organizationView/$1');
+    $routes->get('statistics/organization-data/(:num)', 'Admin\Statistics::organizationData/$1');
     $routes->post('statistics/comparison', 'Admin\Statistics::comparison');
 
     // Certificates

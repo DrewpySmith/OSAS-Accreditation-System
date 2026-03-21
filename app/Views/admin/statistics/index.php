@@ -35,38 +35,15 @@
         <canvas id="activitiesChart" height="100"></canvas>
     </div>
 
-    <!-- Organization Cards -->
+    <!-- Organization Cards (React modal) -->
     <div class="rounded-xl border bg-card p-6 shadow-sm animate-slide-up animation-delay-400">
         <h3 class="text-lg font-semibold mb-1">Select Organization to View Details</h3>
         <p class="text-muted-foreground text-sm mb-5">Click on any organization card to see their detailed statistics.
         </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <?php if (empty($organizations)): ?>
-                <p class="col-span-full text-center text-muted-foreground py-8">No organizations available.</p>
-            <?php else: ?>
-                <?php foreach ($organizations as $org): ?>
-                    <a href="<?= base_url('admin/statistics/organization/' . $org['id']) ?>"
-                        class="rounded-lg border border-white/10 bg-background p-4 hover:border-blue-500/40 hover:bg-blue-500/5 transition-all hover:-translate-y-1 hover:shadow-md group">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <p class="font-semibold text-foreground group-hover:text-blue-400 transition-colors">
-                                    <?= esc($org['name']) ?>
-                                </p>
-                                <?php if (!empty($org['acronym'])): ?>
-                                    <p class="text-sm text-muted-foreground"><?= esc($org['acronym']) ?></p>
-                                <?php endif; ?>
-                                <p class="text-xs text-blue-400 mt-1"><?= esc($org['campus'] ?? '') ?></p>
-                            </div>
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="w-5 h-5 text-muted-foreground group-hover:text-blue-400 transition-colors mt-0.5 flex-shrink-0"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </a>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+        <div
+            id="react-statistics-org-cards"
+            data-props="<?= htmlspecialchars(json_encode(['organizations' => array_map(fn($o) => ['id' => $o['id'], 'name' => $o['name'], 'acronym' => $o['acronym'] ?? '', 'campus' => $o['campus'] ?? ''], $organizations ?? [])]), ENT_QUOTES) ?>"
+        ></div>
     </div>
 
     <!-- Comparison Tool -->
