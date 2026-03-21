@@ -344,7 +344,7 @@ This software is licensed under the MIT License. See `LICENSE.md` for details.
 - Malakad, Jann Lemor M.
 
 Framework: CodeIgniter 4
-UI Framework: Bootstrap 5
+UI Framework: React
 Chart Library: Chart.js
 
 ---
