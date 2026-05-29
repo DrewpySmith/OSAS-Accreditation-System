@@ -73,6 +73,20 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('accomplishment-reports/download/(:num)', 'Admin\AccomplishmentReports::download/$1');
     $routes->get('accomplishment-reports/print/(:num)', 'Admin\AccomplishmentReports::print/$1');
 
+    // Announcements
+    $routes->get('announcements', 'Admin\Announcements::index');
+    $routes->post('announcements/store', 'Admin\Announcements::store');
+    $routes->post('announcements/update/(:num)', 'Admin\Announcements::update/$1');
+    $routes->post('announcements/delete/(:num)', 'Admin\Announcements::delete/$1');
+    $routes->post('announcements/toggle/(:num)', 'Admin\Announcements::toggleActive/$1');
+    $routes->get('announcements/orgs', 'Admin\Announcements::getOrgs');
+
+    // Chat
+    $routes->get('chat', 'Admin\Chat::index');
+    $routes->get('chat/(:num)', 'Admin\Chat::conversation/$1');
+    $routes->post('chat/send/(:num)', 'Admin\Chat::send/$1');
+    $routes->get('chat/poll/(:num)', 'Admin\Chat::poll/$1');
+
     // Statistics
     $routes->get('statistics', 'Admin\Statistics::index');
     $routes->get('statistics/dashboard-data', 'Admin\Statistics::getDashboardData');
@@ -150,4 +164,13 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     $routes->get('notifications', 'Organization\Notifications::index');
     $routes->post('notifications/mark-read/(:num)', 'Organization\Notifications::markAsRead/$1');
     $routes->post('notifications/mark-all-read', 'Organization\Notifications::markAllAsRead');
+
+    // Announcements
+    $routes->get('announcements', 'Organization\Announcements::index');
+    $routes->post('announcements/read/(:num)', 'Organization\Announcements::markAsRead/$1');
+
+    // Chat
+    $routes->get('chat', 'Organization\Chat::index');
+    $routes->post('chat/send', 'Organization\Chat::send');
+    $routes->get('chat/poll', 'Organization\Chat::poll');
 });

@@ -161,6 +161,26 @@ $isActive = function (string $segment) use ($currentUri): bool {
                         </svg>
                         <span class="sidebar-text text-truncate">Statistics</span>
                     </a>
+                    <a href="<?= base_url('admin/announcements') ?>"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all nav-item <?= $isActive('admin/announcements') ? 'bg-blue-600 text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground' ?>"
+                        title="Announcements">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-3 flex-shrink-0 nav-icon" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                        </svg>
+                        <span class="sidebar-text text-truncate">Announcements</span>
+                    </a>
+                    <a href="<?= base_url('admin/chat') ?>"
+                        class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all nav-item <?= $isActive('admin/chat') ? 'bg-blue-600 text-white' : 'text-muted-foreground hover:bg-muted hover:text-foreground' ?>"
+                        title="Messages">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-3 flex-shrink-0 nav-icon" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span class="sidebar-text text-truncate">Messages</span>
+                    </a>
                 </div>
             </nav>
 
