@@ -11,7 +11,7 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-const OrganizationsList = ({ initialOrganizations, campuses, selectedCampus, printUrl, createUrl, viewUrlBase, editUrlBase, deleteUrlBase }) => {
+const OrganizationsList = ({ initialOrganizations, campuses, selectedCampus, printUrl, createUrl, pendingUrl, viewUrlBase, editUrlBase, deleteUrlBase }) => {
     const [organizations, setOrganizations] = useState(initialOrganizations || []);
     const [modalOpen, setModalOpen] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
@@ -98,6 +98,16 @@ const OrganizationsList = ({ initialOrganizations, campuses, selectedCampus, pri
                         ))}
                     </select>
 
+                    {pendingUrl && (
+                        <a
+                            href={pendingUrl}
+                            className="inline-flex items-center h-10 px-4 rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm font-semibold hover:bg-amber-500/20 transition-all hover:-translate-y-0.5"
+                        >
+                            <AlertCircle className="w-4 h-4 mr-2" />
+                            Pending Signups
+                        </a>
+                    )}
+
                     <a
                         href={printUrl}
                         target="_blank"
@@ -149,7 +159,22 @@ const OrganizationsList = ({ initialOrganizations, campuses, selectedCampus, pri
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-foreground">{org.name}</span>
-                                                <span className="text-sm text-muted-foreground">{org.acronym}</span>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {org.acronym && (
+                                                        <span className="text-xs px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-muted-foreground font-mono font-medium">{org.acronym}</span>
+                                                    )}
+                                                    {org.officer_email ? (
+                                                        <span className="text-xs text-muted-foreground select-all font-medium flex items-center gap-1.5">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500/50"></span>
+                                                            {org.officer_email}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-rose-400/80 font-medium italic flex items-center gap-1.5">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500/50"></span>
+                                                            no email assigned
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>

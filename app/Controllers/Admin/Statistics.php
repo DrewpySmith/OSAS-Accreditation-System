@@ -225,4 +225,88 @@ class Statistics extends BaseController
         fclose($output);
         exit;
     }
+
+    /**
+     * Fetch detailed accreditation statistics filtered by campus
+     */
+    public function getDashboardData()
+    {
+        $campus = $this->request->getGet('campus');
+        
+        $db = \Config\Database::connect();
+        
+        // Build base organization query
+        $orgQuery = $this->organizationModel;
+        if (!empty($campus) && $campus !== 'all') {
+            $orgQuery = $orgQuery->where('campus', $campus);
+        }
+        $organizations = $orgQuery->findAll();
+
+        $ayRow = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $ayRow ? $ayRow['year'] : '2024-2025';
+
+        $orgList = [];
+        $accreditedCount = 0;
+        $unaccreditedCount = 0;
+
+        $requiredFields = [
+            'application_letter' => 'Application Letter Form',
+            'officer_list' => 'Lists of Officers',
+            'commitment_forms' => 'Commitment Forms of Officers and Advisers',
+            'constitution_bylaws' => 'Constitution and By-Laws',
+            'org_structure' => 'Organizational Structure',
+            'calendar_activities' => 'Plan and Calendar of Activities',
+            'financial_report' => 'Audited Financial Report',
+            'program_expenditures' => 'Program of Expenditures',
+            'accomplishment_report' => 'Accomplishment Reports'
+        ];
+
+        foreach ($organizations as $org) {
+            // Find current checklist for organization
+            $checklist = $db->table('organization_checklists')
+                            ->where('organization_id', $org['id'])
+                            ->where('academic_year', $academicYear)
+                            ->get()
+                            ->getRowArray();
+
+            $verifiedCount = 0;
+            $missing = [];
+
+            foreach ($requiredFields as $field => $label) {
+                if ($checklist && isset($checklist[$field]) && (int)$checklist[$field] === 1) {
+                    $verifiedCount++;
+                } else {
+                    $missing[] = $label;
+                }
+            }
+
+            // Calculate precise percentage based on the 9 items
+            $progress = round(($verifiedCount / 9) * 100);
+
+            if ($progress === 100.0) {
+                $accreditedCount++;
+            } else {
+                $unaccreditedCount++;
+            }
+
+            $orgList[] = [
+                'id'                   => $org['id'],
+                'name'                 => $org['name'],
+                'acronym'              => $org['acronym'] ?: 'N/A',
+                'campus'               => $org['campus'],
+                'progress'             => $progress,
+                'missing_requirements' => $missing,
+                'status'               => $org['status']
+            ];
+        }
+
+        return $this->response->setJSON([
+            'success'            => true,
+            'selected_campus'    => $campus ?: 'all',
+            'total_orgs'         => count($orgList),
+            'accredited_count'   => $accreditedCount,
+            'unaccredited_count' => $unaccreditedCount,
+            'organizations'      => $orgList
+        ]);
+    }
 }

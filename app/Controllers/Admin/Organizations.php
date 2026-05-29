@@ -6,6 +6,8 @@ use App\Controllers\BaseController;
 use App\Models\OrganizationModel;
 use App\Models\UserModel;
 use App\Models\OrganizationChecklistModel;
+use App\Models\OrganizationRegistrationModel;
+use App\Libraries\EmailService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -24,7 +26,10 @@ class Organizations extends BaseController
     {
         $campus = $this->request->getGet('campus');
 
-        $query = $this->organizationModel;
+        $query = $this->organizationModel
+            ->select('organizations.*, users.username as officer_email')
+            ->join('users', 'users.organization_id = organizations.id AND users.role = "organization"', 'left');
+            
         if (!empty($campus)) {
             $query = $query->where('campus', $campus);
         }
@@ -51,7 +56,7 @@ class Organizations extends BaseController
             'acronym' => 'permit_empty|max_length[50]',
             'campus' => 'required',
             'description' => 'permit_empty',
-            'username' => 'required|min_length[3]|is_unique[users.username]',
+            'username' => 'required|valid_email|is_unique[users.username]',
             'password' => 'permit_empty', // Combined with new_password below
         ];
 
@@ -79,15 +84,22 @@ class Organizations extends BaseController
 
         if ($orgId) {
             // Create user account
+            $plainPassword = $this->request->getPost('password') ?: $this->request->getPost('new_password');
+            $email = $this->request->getPost('username');
+            $orgName = $this->request->getPost('name');
+
             $userData = [
-                'username' => $this->request->getPost('username'),
-                'password' => $this->request->getPost('password') ?: $this->request->getPost('new_password'),
+                'username' => $email,
+                'password' => $plainPassword,
                 'role' => 'organization',
                 'organization_id' => $orgId,
                 'is_active' => 1
             ];
 
             $this->userModel->insert($userData);
+
+            // Send welcome email with credentials
+            EmailService::sendWelcomeCredentials($email, $orgName, $email, $plainPassword);
 
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -128,12 +140,16 @@ class Organizations extends BaseController
     {
         $validation = \Config\Services::validation();
 
+        $user = $this->userModel->where('organization_id', $id)->where('role', 'organization')->first();
+        $userId = $user ? $user['id'] : null;
+
         $rules = [
             'name' => 'required|min_length[3]',
             'acronym' => 'permit_empty|max_length[50]',
             'campus' => 'required',
             'description' => 'permit_empty',
-            'status' => 'required|in_list[active,inactive,suspended]'
+            'status' => 'required|in_list[active,inactive,suspended]',
+            'username' => 'required|valid_email|is_unique[users.username,id,' . ($userId ?? '0') . ']'
         ];
 
         if (!$this->validate($rules)) {
@@ -156,13 +172,16 @@ class Organizations extends BaseController
         ];
 
         if ($this->organizationModel->update($id, $orgData)) {
-            // Update user if password is provided
-            $newPassword = $this->request->getPost('new_password');
-            if (!empty($newPassword)) {
-                $user = $this->userModel->where('organization_id', $id)->first();
-                if ($user) {
-                    $this->userModel->update($user['id'], ['password' => $newPassword]);
+            // Update username (email) and/or password
+            if ($user) {
+                $userData = [
+                    'username' => $this->request->getPost('username')
+                ];
+                $newPassword = $this->request->getPost('new_password');
+                if (!empty($newPassword)) {
+                    $userData['password'] = $newPassword;
                 }
+                $this->userModel->update($user['id'], $userData);
             }
 
             if ($this->request->isAJAX()) {
@@ -373,5 +392,111 @@ class Organizations extends BaseController
         $data['title'] = 'List of Organizations' . (!empty($campus) ? ' - ' . $campus . ' Campus' : '');
 
         return view('admin/organizations/print', $data);
+    }
+
+    /**
+     * View pending registration requests
+     */
+    public function pendingList()
+    {
+        $regModel = new OrganizationRegistrationModel();
+        
+        // Fetch all non-approved signups
+        $data['registrations'] = $regModel->orderBy('created_at', 'DESC')->findAll();
+        $data['title'] = 'Pending Registrations';
+        
+        return view('admin/organizations/pending', $data);
+    }
+
+    /**
+     * Approve organization registration and provision accounts
+     */
+    public function approveRegistration($id)
+    {
+        $regModel = new OrganizationRegistrationModel();
+        $registration = $regModel->find($id);
+
+        if (!$registration || $registration['status'] !== 'pending_admin') {
+            return redirect()->back()->with('error', 'Registration request not found or not signed by adviser.');
+        }
+
+        // Generate dynamic academic year fallback
+        $db = \Config\Database::connect();
+        $ayRow = $db->table('academic_years')->where('is_current', 1)->get()->getRowArray();
+        $academicYear = $ayRow ? $ayRow['year'] : '2024-2025';
+
+        // 1. Create Organization in organizations table
+        $orgData = [
+            'name'        => $registration['name'],
+            'acronym'     => $registration['acronym'],
+            'campus'      => $registration['campus'],
+            'description' => $registration['description'],
+            'status'      => 'active'
+        ];
+        
+        $orgId = $this->organizationModel->insert($orgData);
+
+        if ($orgId) {
+            // 2. Create User account in users table
+            $userData = [
+                'username'        => $registration['officer_email'],
+                'password'        => $registration['officer_password'], // Already hashed on submitRegister
+                'role'            => 'organization',
+                'organization_id' => $orgId,
+                'is_active'       => 1
+            ];
+            
+            $this->userModel->insert($userData);
+
+            // 3. Initialize organization checklist progress row automatically
+            $checklistModel = new OrganizationChecklistModel();
+            $checklistModel->insert([
+                'organization_id' => $orgId,
+                'academic_year'   => $academicYear,
+                'application_letter' => 0,
+                'officer_list' => 0,
+                'commitment_forms' => 0,
+                'constitution_bylaws' => 0,
+                'org_structure' => 0,
+                'calendar_activities' => 0,
+                'financial_report' => 0,
+                'program_expenditures' => 0,
+                'accomplishment_report' => 0,
+            ]);
+
+            // 4. Update registration request status to approved
+            $regModel->update($id, ['status' => 'approved']);
+
+            // 5. Send Welcome & Credentials Email (plain pass placeholder since original is hashed, notify them of their set email)
+            EmailService::sendWelcomeCredentials(
+                $registration['officer_email'],
+                $registration['name'],
+                $registration['officer_email'],
+                '[Password chosen during registration]'
+            );
+
+            return redirect()->to('/admin/organizations/pending')->with('success', 'Organization ' . $registration['name'] . ' approved successfully! Account credentials have been emailed.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to approve the registration request.');
+    }
+
+    /**
+     * Reject organization registration request
+     */
+    public function rejectRegistration($id)
+    {
+        $regModel = new OrganizationRegistrationModel();
+        $registration = $regModel->find($id);
+
+        if (!$registration) {
+            return redirect()->back()->with('error', 'Registration request not found.');
+        }
+
+        if ($regModel->update($id, ['status' => 'rejected'])) {
+            return redirect()->to('/admin/organizations/pending')->with('success', 'Organization registration request has been rejected.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to reject the registration request.');
     }
 }

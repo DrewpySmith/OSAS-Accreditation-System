@@ -8,16 +8,34 @@ use CodeIgniter\Router\RouteCollection;
 
 $routes->get('/', 'Auth::login');
 
-// Authentication Routes
+// Authentication & Registration Routes
 $routes->get('login', 'Auth::login');
 $routes->post('authenticate', 'Auth::authenticate');
 $routes->get('logout', 'Auth::logout');
 $routes->get('change-password', 'Auth::changePassword', ['filter' => 'auth']);
 $routes->post('update-password', 'Auth::updatePassword', ['filter' => 'auth']);
 
+// Registration Portal
+$routes->get('register', 'Auth::register');
+$routes->post('register', 'Auth::submitRegister');
+
+// Adviser Verification & Canvas Signature
+$routes->get('validate-org/(:segment)', 'Auth::validateAdviser/$1');
+$routes->post('validate-org/sign/(:segment)', 'Auth::submitAdviserSignature/$1');
+
+// Forgot & Reset Password Flow
+$routes->post('forgot-password', 'Auth::sendResetLink');
+$routes->get('reset-password', 'Auth::resetPassword');
+$routes->post('reset-password', 'Auth::updateForgotPassword');
+
 // Admin Routes
 $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->get('dashboard', 'Admin\Dashboard::index');
+
+    // Pending Organization Registrations
+    $routes->get('organizations/pending', 'Admin\Organizations::pendingList');
+    $routes->post('organizations/approve-registration/(:num)', 'Admin\Organizations::approveRegistration/$1');
+    $routes->post('organizations/reject-registration/(:num)', 'Admin\Organizations::rejectRegistration/$1');
 
     // Organization Management
     $routes->get('organizations', 'Admin\Organizations::index');
@@ -57,6 +75,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
 
     // Statistics
     $routes->get('statistics', 'Admin\Statistics::index');
+    $routes->get('statistics/dashboard-data', 'Admin\Statistics::getDashboardData');
     $routes->get('statistics/organization/(:num)', 'Admin\Statistics::organizationView/$1');
     $routes->get('statistics/organization-data/(:num)', 'Admin\Statistics::organizationData/$1');
     $routes->post('statistics/comparison', 'Admin\Statistics::comparison');

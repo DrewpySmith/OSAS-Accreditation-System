@@ -33,7 +33,7 @@ const OrganizationActionModal = ({ open, onOpenChange, record, campuses, onSaveS
                     campus: record.campus || '',
                     description: record.description || '',
                     status: record.status || 'active',
-                    username: record.username || '',
+                    username: record.officer_email || record.username || '',
                     new_password: ''
                 });
             } else {
@@ -174,12 +174,10 @@ const OrganizationActionModal = ({ open, onOpenChange, record, campuses, onSaveS
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
-                                {!isEdit && (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-muted-foreground ml-1">Username</label>
-                                        <input name="username" defaultValue={formData.username} required placeholder="account_username" className="w-full px-4 py-3 rounded-xl border border-white/10 bg-muted/50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" />
-                                    </div>
-                                )}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-muted-foreground ml-1">Officer Email (Username)</label>
+                                    <input type="email" name="username" defaultValue={formData.username} required placeholder="officer@campus.edu.ph" className="w-full px-4 py-3 rounded-xl border border-white/10 bg-muted/50 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" />
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-muted-foreground ml-1">
                                         {isEdit ? 'Update Password' : 'Initial Password'}

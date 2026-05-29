@@ -23,6 +23,7 @@
     'selectedCampus' => $selected_campus,
     'printUrl' => base_url('admin/organizations/print' . (!empty($selected_campus) ? '?campus=' . $selected_campus : '')),
     'createUrl' => base_url('admin/organizations/create'),
+    'pendingUrl' => base_url('admin/organizations/pending'),
     'viewUrlBase' => base_url('admin/organizations/view'),
     'editUrlBase' => base_url('admin/organizations/edit'),
     'deleteUrlBase' => base_url('admin/organizations/delete')

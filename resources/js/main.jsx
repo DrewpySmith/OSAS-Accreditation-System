@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import UploadModal from './components/UploadModal';
 import OrganizationsList from './components/OrganizationsList';
 import StatisticsOrgCards from './components/StatisticsOrgCards';
+import StatisticsDashboard from './components/StatisticsDashboard';
 import '../css/app.css';
 
 // Guard against double-initialization (can happen with Vite chunks)
@@ -74,6 +75,21 @@ if (window.__osasInitialized) {
         ReactDOM.createRoot(listRoot).render(
             <ErrorBoundary>
                 <OrganizationsList {...props} />
+            </ErrorBoundary>
+        );
+    }
+
+    // Mount StatisticsDashboard (Admin Statistics Overhaul)
+    const statsDashboardRoot = document.getElementById('react-statistics-dashboard');
+    if (statsDashboardRoot && !statsDashboardRoot._reactRootContainer) {
+        const propsRaw = statsDashboardRoot.getAttribute('data-props');
+        let statsProps = {};
+        if (propsRaw) {
+            try { statsProps = JSON.parse(propsRaw); } catch (e) { console.error('Failed to parse StatisticsDashboard props:', e); }
+        }
+        ReactDOM.createRoot(statsDashboardRoot).render(
+            <ErrorBoundary>
+                <StatisticsDashboard {...statsProps} />
             </ErrorBoundary>
         );
     }

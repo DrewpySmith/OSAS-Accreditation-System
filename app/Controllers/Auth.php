@@ -4,6 +4,9 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Models\OrganizationRegistrationModel;
+use App\Models\OrganizationModel;
+use App\Libraries\EmailService;
 
 class Auth extends BaseController
 {
@@ -23,12 +26,11 @@ class Auth extends BaseController
         $validation->setRules([
             'username' => [
                 'label' => 'Username',
-                'rules' => 'required|min_length[3]|max_length[100]|alpha_numeric',
+                'rules' => 'required|min_length[3]|max_length[100]',
                 'errors' => [
                     'required' => 'Username is required',
                     'min_length' => 'Username must be at least 3 characters',
-                    'max_length' => 'Username cannot exceed 100 characters',
-                    'alpha_numeric' => 'Username can only contain letters and numbers'
+                    'max_length' => 'Username cannot exceed 100 characters'
                 ]
             ],
             'password' => [
@@ -160,4 +162,267 @@ class Auth extends BaseController
             return '/organization/dashboard';
         }
     }
-}
+
+    /**
+     * View registration portal
+     */
+    public function register()
+    {
+        if (session()->get('logged_in')) {
+            return redirect()->to($this->getRedirectPath());
+        }
+
+        return view('auth/register', [
+            'campuses' => OrganizationModel::CAMPUSES
+        ]);
+    }
+
+    /**
+     * Submit new organization signup request
+     */
+    public function submitRegister()
+    {
+        $validation = \Config\Services::validation();
+
+        $validation->setRules([
+            'name'             => 'required|min_length[3]|max_length[255]',
+            'acronym'          => 'permit_empty|min_length[2]|max_length[50]',
+            'campus'           => 'required',
+            'description'      => 'permit_empty',
+            'officer_email'    => 'required|valid_email|is_unique[users.username]|is_unique[organization_registrations.officer_email]',
+            'officer_password' => 'required|min_length[6]',
+            'adviser_name'     => 'required|min_length[3]|max_length[255]',
+            'adviser_email'    => 'required|valid_email',
+        ], [
+            'officer_email' => [
+                'is_unique' => 'This email address is already in use by an active user or pending signup.'
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        }
+
+        $regModel = new OrganizationRegistrationModel();
+        
+        $data = [
+            'name'             => $this->request->getPost('name'),
+            'acronym'          => $this->request->getPost('acronym'),
+            'campus'           => $this->request->getPost('campus'),
+            'description'      => $this->request->getPost('description'),
+            'officer_email'    => $this->request->getPost('officer_email'),
+            'officer_password' => password_hash($this->request->getPost('officer_password'), PASSWORD_BCRYPT),
+            'adviser_name'     => $this->request->getPost('adviser_name'),
+            'adviser_email'    => $this->request->getPost('adviser_email'),
+            'adviser_token'    => $regModel->generateToken(),
+            'status'           => 'pending_adviser',
+        ];
+
+        if ($regModel->insert($data)) {
+            // Trigger Adviser Notification Email
+            EmailService::sendAdviserVerification($data['adviser_email'], $data);
+            return redirect()->to('/login')->with('success', 'Signup request submitted! An email has been sent to your adviser to sign and validate your application.');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Something went wrong. Please try again.');
+    }
+
+    /**
+     * Adviser validation page (Commitment Form & Signature Canvas)
+     */
+    public function validateAdviser($token)
+    {
+        $regModel = new OrganizationRegistrationModel();
+        $registration = $regModel->where('adviser_token', $token)->first();
+
+        if (!$registration) {
+            return redirect()->to('/login')->with('error', 'Invalid or expired validation link.');
+        }
+
+        if ($registration['status'] !== 'pending_adviser') {
+            return redirect()->to('/login')->with('error', 'This registration request has already been validated.');
+        }
+
+        return view('auth/validate_adviser', [
+            'registration' => $registration
+        ]);
+    }
+
+    /**
+     * Submit Adviser Signature base64 image
+     */
+    public function submitAdviserSignature($token)
+    {
+        $regModel = new OrganizationRegistrationModel();
+        $registration = $regModel->where('adviser_token', $token)->first();
+
+        if (!$registration || $registration['status'] !== 'pending_adviser') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid or expired validation link.'
+            ]);
+        }
+
+        $signatureBase64 = $this->request->getPost('signature');
+        if (empty($signatureBase64)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Signature is required.'
+            ]);
+        }
+
+        // Save canvas signature image
+        $signatureBase64 = str_replace('data:image/png;base64,', '', $signatureBase64);
+        $signatureBase64 = str_replace(' ', '+', $signatureBase64);
+        $imageDecoded = base64_decode($signatureBase64);
+
+        $fileName = 'sig_' . $registration['id'] . '_' . time() . '.png';
+        $uploadDir = ROOTPATH . 'public/uploads/signatures/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        file_put_contents($uploadDir . $fileName, $imageDecoded);
+
+        // Update registration record
+        $updateData = [
+            'signature_path' => 'uploads/signatures/' . $fileName,
+            'status'         => 'pending_admin',
+            'signed_at'      => date('Y-m-d H:i:s')
+        ];
+
+        if ($regModel->update($registration['id'], $updateData)) {
+            // Notify Admin via Email
+            $db = \Config\Database::connect();
+            $adminSetting = $db->table('system_settings')->where('setting_key', 'system_email')->get()->getRowArray();
+            $adminEmail = $adminSetting ? $adminSetting['setting_value'] : 'admin@usg-accreditation.com';
+            
+            EmailService::sendAdminNotice($adminEmail, array_merge($registration, $updateData));
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Thank you! Your signature has been verified. The application is now sent to the USG Administrator for final review.'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Failed to save your signature. Please try again.'
+        ]);
+    }
+
+    /**
+     * Send Password Recovery Link via SMTP
+     */
+    public function sendResetLink()
+    {
+        $email = $this->request->getPost('email');
+        if (empty($email)) {
+            return redirect()->back()->with('error', 'Email address is required');
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->where('username', $email)->first(); // Remember: organization usernames are emails
+
+        if (!$user) {
+            // Decoy success to prevent email enumeration attacks
+            return redirect()->to('/login')->with('success', 'If the email exists, a password reset link has been sent.');
+        }
+
+        // Generate token
+        $token = bin2hex(random_bytes(32));
+        $db = \Config\Database::connect();
+        
+        // Delete previous resets
+        $db->table('password_resets')->where('email', $email)->delete();
+
+        // Save new reset
+        $db->table('password_resets')->insert([
+            'email'      => $email,
+            'token'      => $token,
+            'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour')),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+
+        // Send Email
+        EmailService::sendPasswordReset($email, $token);
+
+        return redirect()->to('/login')->with('success', 'If the email exists, a password reset link has been sent.');
+    }
+
+    /**
+     * Reset password form page
+     */
+    public function resetPassword()
+    {
+        $token = $this->request->getGet('token');
+        if (empty($token)) {
+            return redirect()->to('/login')->with('error', 'Missing password reset token.');
+        }
+
+        $db = \Config\Database::connect();
+        $reset = $db->table('password_resets')
+                    ->where('token', $token)
+                    ->where('expires_at >=', date('Y-m-d H:i:s'))
+                    ->get()
+                    ->getRowArray();
+
+        if (!$reset) {
+            return redirect()->to('/login')->with('error', 'Invalid or expired password reset link.');
+        }
+
+        return view('auth/reset_password', [
+            'token' => $token
+        ]);
+    }
+
+    /**
+     * Save new password
+     */
+    public function updateForgotPassword()
+    {
+        $token = $this->request->getPost('token');
+        $password = $this->request->getPost('password');
+        $confirm = $this->request->getPost('confirm_password');
+
+        if (empty($token) || empty($password) || empty($confirm)) {
+            return redirect()->back()->with('error', 'All fields are required');
+        }
+
+        if ($password !== $confirm) {
+            return redirect()->back()->with('error', 'Passwords do not match');
+        }
+
+        if (strlen($password) < 6) {
+            return redirect()->back()->with('error', 'Password must be at least 6 characters');
+        }
+
+        $db = \Config\Database::connect();
+        $reset = $db->table('password_resets')
+                    ->where('token', $token)
+                    ->where('expires_at >=', date('Y-m-d H:i:s'))
+                    ->get()
+                    ->getRowArray();
+
+        if (!$reset) {
+            return redirect()->to('/login')->with('error', 'Invalid or expired password reset token.');
+        }
+
+        $userModel = new UserModel();
+        $user = $userModel->where('username', $reset['email'])->first();
+
+        if ($user) {
+            // Update password
+            $userModel->update($user['id'], [
+                'password' => password_hash($password, PASSWORD_BCRYPT)
+            ]);
+            
+            // Delete token
+            $db->table('password_resets')->where('email', $reset['email'])->delete();
+
+            return redirect()->to('/login')->with('success', 'Your password has been successfully reset. You can now log in.');
+        }
+
+        return redirect()->to('/login')->with('error', 'User account not found.');
+    }
+}

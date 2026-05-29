@@ -31,13 +31,32 @@ class Dashboard extends BaseController
 
         // Get monthly stats for the chart
         $db = \Config\Database::connect();
-        $monthlyStats = $db->table('document_submissions')
-            ->select("DATE_FORMAT(created_at, '%b') as month, COUNT(*) as count")
-            ->groupBy("month")
-            ->orderBy("created_at", "ASC")
-            ->limit(10)
-            ->get()
-            ->getResultArray();
+        $driver = $db->DBDriver;
+
+        if ($driver === 'SQLite3') {
+            $monthlyStats = $db->table('document_submissions')
+                ->select("strftime('%m', created_at) as month_num, strftime('%Y', created_at) as year, COUNT(*) as count")
+                ->groupBy("year, month_num")
+                ->orderBy("year ASC, month_num ASC")
+                ->limit(10)
+                ->get()
+                ->getResultArray();
+
+            // Map month numbers to short names in PHP
+            $monthNames = ['01'=>'Jan','02'=>'Feb','03'=>'Mar','04'=>'Apr','05'=>'May','06'=>'Jun','07'=>'Jul','08'=>'Aug','09'=>'Sep','10'=>'Oct','11'=>'Nov','12'=>'Dec'];
+            foreach ($monthlyStats as &$row) {
+                $row['month'] = $monthNames[$row['month_num']] ?? $row['month_num'];
+            }
+            unset($row);
+        } else {
+            $monthlyStats = $db->table('document_submissions')
+                ->select("DATE_FORMAT(created_at, '%b') as month, COUNT(*) as count")
+                ->groupBy("month")
+                ->orderBy("created_at", "ASC")
+                ->limit(10)
+                ->get()
+                ->getResultArray();
+        }
 
         $data = [
             'total_organizations' => $this->organizationModel->where('status', 'active')->countAllResults(),

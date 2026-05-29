@@ -13,7 +13,6 @@ class AddCampusToOrganizations extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 50,
                 'null' => true,
-                'after' => 'acronym'
             ],
         ];
         $this->forge->addColumn('organizations', $fields);
@@ -23,7 +22,6 @@ class AddCampusToOrganizations extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 50,
                 'null' => true,
-                'after' => 'organization_id'
             ],
         ];
         $this->forge->addColumn('document_submissions', $docFields);
