@@ -24,6 +24,7 @@ class Filters extends BaseConfig
         'auth'          => \App\Filters\AuthFilter::class,
         'admin'         => \App\Filters\AdminFilter::class,
         'organization'  => \App\Filters\OrganizationFilter::class,
+        'throttle'      => \App\Filters\ThrottleFilter::class,
     ];
 
     /**

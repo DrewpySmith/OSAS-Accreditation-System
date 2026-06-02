@@ -123,18 +123,25 @@ class AccomplishmentReport extends BaseController
         $uploadPath = WRITEPATH . 'uploads/accomplishment/' . $organizationId . '/';
         
         if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
+            mkdir($uploadPath, 0755, true);
         }
 
-        // Handle pictorials
+        $maxSize = 10 * 1024 * 1024; // 10MB
+        $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $allowedDocTypes = ['application/pdf'];
+        $allowedDesignTypes = array_merge($allowedImageTypes, $allowedDocTypes);
+
+        // Handle pictorials (images only)
         $pictorials = $this->request->getFileMultiple('pictorials');
         if ($pictorials && is_array($pictorials)) {
             foreach ($pictorials as $file) {
                 if ($file->isValid() && !$file->hasMoved()) {
+                    if ($file->getSize() > $maxSize) { continue; }
+                    if (!in_array($file->getMimeType(), $allowedImageTypes)) { continue; }
                     $newName = $file->getRandomName();
                     $subPath = $uploadPath . 'pictorials/';
                     if (!is_dir($subPath)) {
-                        mkdir($subPath, 0777, true);
+                        mkdir($subPath, 0755, true);
                     }
                     $file->move($subPath, $newName);
                     $this->reportModel->addFile($reportId, 'pictorials', 
@@ -143,15 +150,17 @@ class AccomplishmentReport extends BaseController
             }
         }
 
-        // Handle activity designs
+        // Handle activity designs (images + PDF)
         $designs = $this->request->getFileMultiple('activity_designs');
         if ($designs && is_array($designs)) {
             foreach ($designs as $file) {
                 if ($file->isValid() && !$file->hasMoved()) {
+                    if ($file->getSize() > $maxSize) { continue; }
+                    if (!in_array($file->getMimeType(), $allowedDesignTypes)) { continue; }
                     $newName = $file->getRandomName();
                     $subPath = $uploadPath . 'designs/';
                     if (!is_dir($subPath)) {
-                        mkdir($subPath, 0777, true);
+                        mkdir($subPath, 0755, true);
                     }
                     $file->move($subPath, $newName);
                     $this->reportModel->addFile($reportId, 'activity_designs', 
@@ -160,15 +169,17 @@ class AccomplishmentReport extends BaseController
             }
         }
 
-        // Handle evaluation sheets
+        // Handle evaluation sheets (PDF only)
         $evaluations = $this->request->getFileMultiple('evaluation_sheets');
         if ($evaluations && is_array($evaluations)) {
             foreach ($evaluations as $file) {
                 if ($file->isValid() && !$file->hasMoved()) {
+                    if ($file->getSize() > $maxSize) { continue; }
+                    if (!in_array($file->getMimeType(), $allowedDocTypes)) { continue; }
                     $newName = $file->getRandomName();
                     $subPath = $uploadPath . 'evaluations/';
                     if (!is_dir($subPath)) {
-                        mkdir($subPath, 0777, true);
+                        mkdir($subPath, 0755, true);
                     }
                     $file->move($subPath, $newName);
                     $this->reportModel->addFile($reportId, 'evaluation_sheets', 

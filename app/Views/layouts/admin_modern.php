@@ -78,16 +78,8 @@ $isActive = function (string $segment) use ($currentUri): bool {
             class="w-64 flex flex-col border-r bg-card text-card-foreground flex-shrink-0 sidebar-transition">
             <!-- Logo & Toggle -->
             <div class="h-16 flex items-center px-6 border-b sidebar-header-logo relative">
-                <div
-                    class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-lg flex-shrink-0"
-                    style="width: 32px; height: 32px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" width="20" height="20" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 01.75 12c0 6.213 4.963 11.25 11.25 11.25s11.25-5.037 11.25-11.25c0-2.396-.754-4.62-2.046-6.448A11.963 11.963 0 0112 2.714z" />
-                    </svg>
-                </div>
-                <span class="font-semibold text-lg tracking-tight sidebar-text">Accredify</span>
+                <img src="<?= base_url('SKSU_Official_Seal.png') ?>" alt="SKSU Logo" class="w-8 h-8 rounded-lg object-contain flex-shrink-0">
+                <span class="font-semibold text-lg tracking-tight sidebar-text ml-2">OSAS</span>
                 <button id="sidebar-toggle"
                     class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-card border rounded-full flex items-center justify-center shadow-sm hover:bg-muted transition-colors z-20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-muted-foreground rotate-toggle"
@@ -95,19 +87,6 @@ $isActive = function (string $segment) use ($currentUri): bool {
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-            </div>
-
-            <!-- Team selector -->
-            <div class="px-4 py-4 team-selector">
-                <div class="w-full flex items-center justify-between px-3 py-2 bg-muted rounded-md">
-                    <div class="flex items-center">
-                        <div
-                            class="w-6 h-6 rounded-md bg-blue-600 mr-2 flex items-center justify-center text-xs text-white font-bold">
-                            A</div>
-                        <span class="text-sm font-medium">Admin Portal</span>
-                    </div>
-                    <span class="text-xs text-muted-foreground uppercase">⌘ K</span>
-                </div>
             </div>
 
             <!-- Navigation -->

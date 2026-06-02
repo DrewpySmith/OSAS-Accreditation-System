@@ -35,10 +35,10 @@ class Auth extends BaseController
             ],
             'password' => [
                 'label' => 'Password',
-                'rules' => 'required|min_length[6]',
+                'rules' => 'required|min_length[8]',
                 'errors' => [
                     'required' => 'Password is required',
-                    'min_length' => 'Password must be at least 6 characters'
+                    'min_length' => 'Password must be at least 8 characters'
                 ]
             ]
         ]);
@@ -116,10 +116,10 @@ class Auth extends BaseController
             ],
             'new_password' => [
                 'label' => 'New Password',
-                'rules' => 'required|min_length[6]|max_length[255]',
+                'rules' => 'required|min_length[8]|max_length[255]',
                 'errors' => [
                     'required' => 'New password is required',
-                    'min_length' => 'New password must be at least 6 characters',
+                    'min_length' => 'New password must be at least 8 characters',
                     'max_length' => 'New password cannot exceed 255 characters'
                 ]
             ],
@@ -190,7 +190,7 @@ class Auth extends BaseController
             'campus'           => 'required',
             'description'      => 'permit_empty',
             'officer_email'    => 'required|valid_email|is_unique[users.username]|is_unique[organization_registrations.officer_email]',
-            'officer_password' => 'required|min_length[6]',
+            'officer_password' => 'required|min_length[8]',
             'adviser_name'     => 'required|min_length[3]|max_length[255]',
             'adviser_email'    => 'required|valid_email',
         ], [
@@ -271,15 +271,47 @@ class Auth extends BaseController
             ]);
         }
 
+        // Validate base64 format
+        if (!preg_match('/^data:image\/(png|jpeg|jpg);base64,/', $signatureBase64)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid signature format.'
+            ]);
+        }
+
         // Save canvas signature image
-        $signatureBase64 = str_replace('data:image/png;base64,', '', $signatureBase64);
+        $signatureBase64 = preg_replace('/^data:image\/(png|jpeg|jpg);base64,/', '', $signatureBase64);
         $signatureBase64 = str_replace(' ', '+', $signatureBase64);
-        $imageDecoded = base64_decode($signatureBase64);
+        $imageDecoded = base64_decode($signatureBase64, true);
+
+        if ($imageDecoded === false) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid signature data.'
+            ]);
+        }
+
+        // Validate decoded image size (max 5MB)
+        if (strlen($imageDecoded) > 5 * 1024 * 1024) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Signature file too large.'
+            ]);
+        }
+
+        // Verify it's a valid image
+        $imageInfo = @getimagesizefromstring($imageDecoded);
+        if ($imageInfo === false) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid signature image.'
+            ]);
+        }
 
         $fileName = 'sig_' . $registration['id'] . '_' . time() . '.png';
         $uploadDir = ROOTPATH . 'public/uploads/signatures/';
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0755, true);
         }
 
         file_put_contents($uploadDir . $fileName, $imageDecoded);
@@ -393,8 +425,8 @@ class Auth extends BaseController
             return redirect()->back()->with('error', 'Passwords do not match');
         }
 
-        if (strlen($password) < 6) {
-            return redirect()->back()->with('error', 'Password must be at least 6 characters');
+        if (strlen($password) < 8) {
+            return redirect()->back()->with('error', 'Password must be at least 8 characters');
         }
 
         $db = \Config\Database::connect();

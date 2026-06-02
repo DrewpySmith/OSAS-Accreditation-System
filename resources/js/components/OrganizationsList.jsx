@@ -207,7 +207,22 @@ const OrganizationsList = ({ initialOrganizations, campuses, selectedCampus, pri
                                                     className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
                                                     onClick={() => {
                                                         if (window.confirm('Are you sure you want to delete this organization?')) {
-                                                            window.location.href = `${deleteUrlBase}/${org.id}`;
+                                                            const csrfHeaderName = document.querySelector('meta[name="csrf_header"]')?.content || 'X-CSRF-TOKEN';
+                                                            const csrfHash = document.querySelector('meta[name="csrf_hash"]')?.content || document.querySelector('meta[name="X-CSRF-TOKEN"]')?.content;
+                                                            fetch(`${deleteUrlBase}/${org.id}`, {
+                                                                method: 'POST',
+                                                                headers: {
+                                                                    'X-Requested-With': 'XMLHttpRequest',
+                                                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                                                    [csrfHeaderName]: csrfHash
+                                                                }
+                                                            })
+                                                            .then(r => r.json())
+                                                            .then(data => {
+                                                                if (data.success) { location.reload(); }
+                                                                else { alert(data.message || 'Failed to delete'); }
+                                                            })
+                                                            .catch(() => alert('An error occurred'));
                                                         }
                                                     }}
                                                 >

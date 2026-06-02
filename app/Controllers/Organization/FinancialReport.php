@@ -123,9 +123,14 @@ class FinancialReport extends BaseController
         // Handle passbook upload
         $passbook = $this->request->getFile('passbook_copy');
         if ($passbook && $passbook->isValid()) {
-            $newName = $passbook->getRandomName();
-            $passbook->move(WRITEPATH . 'uploads/passbooks/' . $organizationId, $newName);
-            $data['passbook_copy'] = 'passbooks/' . $organizationId . '/' . $newName;
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+            $maxSize = 10 * 1024 * 1024; // 10MB
+
+            if ($passbook->getSize() <= $maxSize && in_array($passbook->getMimeType(), $allowedTypes)) {
+                $newName = $passbook->getRandomName();
+                $passbook->move(WRITEPATH . 'uploads/passbooks/' . $organizationId, $newName);
+                $data['passbook_copy'] = 'passbooks/' . $organizationId . '/' . $newName;
+            }
         }
 
         if ($existing) {

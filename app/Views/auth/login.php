@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USG Accreditation System - Login</title>
+    <title>OSAS Accreditation System - Login</title>
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -316,7 +316,7 @@
     <div class="login-container">
         <div class="logo-section">
             <img class="seal" src="<?= base_url('SKSU_Official_Seal.png') ?>" alt="SKSU Official Seal">
-            <h1>SKSU USG</h1>
+            <h1>SKSU OSAS</h1>
             <p>Accreditation Portal</p>
         </div>
 
@@ -356,7 +356,7 @@
 
         <div class="footer-text">
             <p>Sultan Kudarat State University</p>
-            <p>&copy; <?= date('Y') ?> USG. All Rights Reserved.</p>
+            <p>&copy; <?= date('Y') ?> OSAS. All Rights Reserved.</p>
         </div>
     </div>
 

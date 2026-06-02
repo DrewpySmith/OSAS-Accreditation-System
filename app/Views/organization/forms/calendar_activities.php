@@ -304,9 +304,28 @@
     });
 
     function deleteActivity(id) {
-        if (confirm('Delete this activity?')) {
-            window.location.href = `/organization/calendar-activities/delete/${id}`;
-        }
+        if (!confirm('Delete this activity?')) return;
+
+        const csrfName = '<?= csrf_token() ?>';
+        const csrfHash = '<?= csrf_hash() ?>';
+
+        fetch(`/organization/calendar-activities/delete/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `${csrfName}=${encodeURIComponent(csrfHash)}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.csrf) {
+                updateCsrfToken(data.csrf);
+            }
+            if (data.success) { location.reload(); }
+            else { alert(data.message || 'Failed to delete'); }
+        })
+        .catch(() => alert('An error occurred'));
     }
 
     function downloadPDF() {

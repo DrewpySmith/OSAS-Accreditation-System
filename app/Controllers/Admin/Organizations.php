@@ -312,6 +312,17 @@ class Organizations extends BaseController
         $value = $this->request->getPost('value');
         $academicYear = $this->request->getPost('academic_year');
 
+        $allowedFields = [
+            'application_letter', 'officer_list', 'commitment_forms',
+            'constitution_bylaws', 'org_structure', 'calendar_activities',
+            'financial_report', 'program_expenditures', 'accomplishment_report',
+            'other', 'remarks'
+        ];
+
+        if (!in_array($field, $allowedFields)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid field'], 400);
+        }
+
         $checklistModel = new \App\Models\OrganizationChecklistModel();
 
         $checklist = $checklistModel->getByOrgAndYear($id, $academicYear);

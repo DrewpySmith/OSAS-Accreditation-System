@@ -10,21 +10,21 @@ $routes->get('/', 'Auth::login');
 
 // Authentication & Registration Routes
 $routes->get('login', 'Auth::login');
-$routes->post('authenticate', 'Auth::authenticate');
+$routes->post('authenticate', 'Auth::authenticate', ['filter' => 'throttle']);
 $routes->get('logout', 'Auth::logout');
 $routes->get('change-password', 'Auth::changePassword', ['filter' => 'auth']);
 $routes->post('update-password', 'Auth::updatePassword', ['filter' => 'auth']);
 
 // Registration Portal
 $routes->get('register', 'Auth::register');
-$routes->post('register', 'Auth::submitRegister');
+$routes->post('register', 'Auth::submitRegister', ['filter' => 'throttle']);
 
 // Adviser Verification & Canvas Signature
 $routes->get('validate-org/(:segment)', 'Auth::validateAdviser/$1');
-$routes->post('validate-org/sign/(:segment)', 'Auth::submitAdviserSignature/$1');
+$routes->post('validate-org/sign/(:segment)', 'Auth::submitAdviserSignature/$1', ['filter' => 'throttle']);
 
 // Forgot & Reset Password Flow
-$routes->post('forgot-password', 'Auth::sendResetLink');
+$routes->post('forgot-password', 'Auth::sendResetLink', ['filter' => 'throttle']);
 $routes->get('reset-password', 'Auth::resetPassword');
 $routes->post('reset-password', 'Auth::updateForgotPassword');
 
@@ -43,7 +43,7 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('organizations/store', 'Admin\Organizations::store');
     $routes->get('organizations/edit/(:num)', 'Admin\Organizations::edit/$1');
     $routes->post('organizations/update/(:num)', 'Admin\Organizations::update/$1');
-    $routes->get('organizations/delete/(:num)', 'Admin\Organizations::delete/$1');
+    $routes->post('organizations/delete/(:num)', 'Admin\Organizations::delete/$1');
     $routes->get('organizations/view/(:num)', 'Admin\Organizations::view/$1');
     $routes->get('organizations/details/(:num)', 'Admin\Organizations::details/$1');
     $routes->post('organizations/checklist/(:num)', 'Admin\Organizations::updateChecklist/$1');
@@ -122,7 +122,7 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     $routes->get('calendar-activities', 'Organization\CalendarActivities::index');
     $routes->post('calendar-activities/store', 'Organization\CalendarActivities::store');
     $routes->post('calendar-activities/update/(:num)', 'Organization\CalendarActivities::update/$1');
-    $routes->get('calendar-activities/delete/(:num)', 'Organization\CalendarActivities::delete/$1');
+    $routes->post('calendar-activities/delete/(:num)', 'Organization\CalendarActivities::delete/$1');
     $routes->get('calendar-activities/download/(:segment)', 'Organization\CalendarActivities::download/$1');
     $routes->get('calendar-activities/print/(:segment)', 'Organization\CalendarActivities::print/$1');
 
@@ -130,7 +130,7 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     $routes->get('program-expenditure', 'Organization\ProgramExpenditure::index');
     $routes->post('program-expenditure/store', 'Organization\ProgramExpenditure::store');
     $routes->post('program-expenditure/update/(:num)', 'Organization\ProgramExpenditure::update/$1');
-    $routes->get('program-expenditure/delete/(:num)', 'Organization\ProgramExpenditure::delete/$1');
+    $routes->post('program-expenditure/delete/(:num)', 'Organization\ProgramExpenditure::delete/$1');
     $routes->get('program-expenditure/download/(:segment)', 'Organization\ProgramExpenditure::download/$1');
     $routes->get('program-expenditure/print/(:segment)', 'Organization\ProgramExpenditure::print/$1');
 
@@ -158,7 +158,7 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     $routes->get('submissions/upload', 'Organization\DocumentSubmission::uploadForm');
     $routes->post('submissions/upload', 'Organization\DocumentSubmission::upload');
     $routes->get('submissions/download/(:num)', 'Organization\DocumentSubmission::download/$1');
-    $routes->get('submissions/delete/(:num)', 'Organization\DocumentSubmission::delete/$1');
+    $routes->post('submissions/delete/(:num)', 'Organization\DocumentSubmission::delete/$1');
 
     // Notifications
     $routes->get('notifications', 'Organization\Notifications::index');
