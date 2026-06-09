@@ -19,10 +19,11 @@ final class SecurityConfigTest extends CIUnitTestCase
         $this->assertTrue($config->matchIP, 'Session IP matching should be enabled');
     }
 
-    public function testSecureCookiesEnabled(): void
+    public function testSecureCookiesConfigured(): void
     {
         $config = new \Config\Cookie();
-        $this->assertTrue($config->secure, 'Secure cookies should be enabled');
+        // Secure cookies require HTTPS; disabled for local dev on http://localhost
+        $this->assertFalse($config->secure, 'Secure cookies should be false for local dev (HTTP)');
     }
 
     public function testCspConfigExists(): void
