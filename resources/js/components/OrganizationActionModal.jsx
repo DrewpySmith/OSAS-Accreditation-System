@@ -77,6 +77,10 @@ const OrganizationActionModal = ({ open, onOpenChange, record, campuses, onSaveS
             });
 
             const data = await response.json();
+            if (data.csrf) {
+                const meta = document.querySelector('meta[name="csrf_hash"]') || document.querySelector('meta[name="X-CSRF-TOKEN"]');
+                if (meta) meta.content = data.csrf;
+            }
             if (data.success) {
                 setIsSuccess(true);
                 setTimeout(() => {
