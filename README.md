@@ -1,62 +1,8 @@
 # OSAS Accreditation Management System
 
-A comprehensive web-based system for managing student organization accreditation, document submissions, financial reports, and compliance tracking.
+A comprehensive web-based system for managing student organization accreditation, document submissions, financial reports, and compliance tracking. AI-assisted
 
-## Features
 
-### Core Functionality
-- **Organization Management**: Register and manage student organizations
-- **Document Submission**: Upload and track accreditation documents
-- **Financial Reporting**: Submit and review financial reports with expenditure tracking
-- **Calendar Activities**: Plan and track organizational activities
-- **Commitment Forms**: Manage organizational commitment forms
-- **Accomplishment Reports**: Track and review organizational achievements
-- **Announcements**: Campus- and org-targeted announcements with read tracking
-- **Chat**: 1:1 messaging between admin and organizations
-
-### Admin Features
-- **Dashboard**: Overview of system statistics and recent activities
-- **Document Review**: Review, approve, or reject submitted documents
-- **Statistics & Analytics**: Comprehensive reporting with visual charts
-- **User Management**: Manage admin and organization user accounts
-- **Audit Trail**: Track all system activities and changes
-- **Announcements**: Create targeted announcements by campus/org
-- **Chat**: Inbox with per-org conversation management
-
-### Organization Features
-- **Document Portal**: Submit required accreditation documents
-- **Financial Management**: Track collections, expenses, and remaining funds
-- **Activity Planning**: Calendar-based activity management
-- **Status Tracking**: Real-time accreditation status updates
-- **Communication**: Comment system for document feedback
-- **Announcements**: Feed with unread indicators
-- **Chat**: Direct messaging with admin
-
-## System Requirements
-
-### Server Requirements
-- **PHP**: 8.0 or higher
-- **Web Server**: Apache 2.4+ or Nginx 1.18+
-- **Database**: SQLite3 (included with PHP)
-- **Memory**: Minimum 512MB RAM (1GB+ recommended)
-- **Storage**: Minimum 2GB free space
-
-### PHP Extensions Required
-- php-cli
-- php-fpm
-- php-sqlite3
-- php-json
-- php-mbstring
-- php-xml
-- php-curl
-- php-gd
-- php-intl
-- php-fileinfo
-
-### Browser Requirements
-- Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- JavaScript enabled
-- Cookies enabled
 
 ## Installation Guide
 
