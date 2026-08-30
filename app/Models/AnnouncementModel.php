@@ -18,13 +18,6 @@ class AnnouncementModel extends Model
         'target_type',
         'target_value',
         'is_active',
-        'summary',
-        'content',
-        'priority',
-        'category',
-        'author',
-        'is_pinned',
-        'expires_at',
     ];
 
     protected $useTimestamps = true;
@@ -55,13 +48,6 @@ class AnnouncementModel extends Model
             ->groupEnd();
         }
 
-        // Exclude expired announcements
-        $builder->groupStart()
-            ->where('expires_at IS NULL', null, false)
-            ->orWhere('expires_at >=', date('Y-m-d H:i:s'))
-        ->groupEnd();
-
-        $builder->orderBy('is_pinned', 'DESC');
         $builder->orderBy('created_at', 'DESC');
 
         if ($limit) {
@@ -94,17 +80,5 @@ class AnnouncementModel extends Model
         }
 
         return $builder->countAllResults();
-    }
-
-    public function togglePin($id)
-    {
-        $announcement = $this->find($id);
-        if (!$announcement) {
-            return false;
-        }
-
-        return $this->update($id, [
-            'is_pinned' => $announcement['is_pinned'] ? 0 : 1,
-        ]);
     }
 }

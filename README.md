@@ -1,6 +1,6 @@
-# USG Accreditation Management System
+# OSAS Accreditation Management System
 
-A comprehensive web-based system for managing university student government (USG) organization accreditation, document submissions, financial reports, and compliance tracking.
+A comprehensive web-based system for managing student organization accreditation, document submissions, financial reports, and compliance tracking.
 
 ## Features
 
@@ -11,6 +11,8 @@ A comprehensive web-based system for managing university student government (USG
 - **Calendar Activities**: Plan and track organizational activities
 - **Commitment Forms**: Manage organizational commitment forms
 - **Accomplishment Reports**: Track and review organizational achievements
+- **Announcements**: Campus- and org-targeted announcements with read tracking
+- **Chat**: 1:1 messaging between admin and organizations
 
 ### Admin Features
 - **Dashboard**: Overview of system statistics and recent activities
@@ -18,6 +20,8 @@ A comprehensive web-based system for managing university student government (USG
 - **Statistics & Analytics**: Comprehensive reporting with visual charts
 - **User Management**: Manage admin and organization user accounts
 - **Audit Trail**: Track all system activities and changes
+- **Announcements**: Create targeted announcements by campus/org
+- **Chat**: Inbox with per-org conversation management
 
 ### Organization Features
 - **Document Portal**: Submit required accreditation documents
@@ -25,20 +29,22 @@ A comprehensive web-based system for managing university student government (USG
 - **Activity Planning**: Calendar-based activity management
 - **Status Tracking**: Real-time accreditation status updates
 - **Communication**: Comment system for document feedback
+- **Announcements**: Feed with unread indicators
+- **Chat**: Direct messaging with admin
 
 ## System Requirements
 
 ### Server Requirements
 - **PHP**: 8.0 or higher
 - **Web Server**: Apache 2.4+ or Nginx 1.18+
-- **Database**: MySQL 5.7+ or MariaDB 10.3+
+- **Database**: SQLite3 (included with PHP)
 - **Memory**: Minimum 512MB RAM (1GB+ recommended)
 - **Storage**: Minimum 2GB free space
 
 ### PHP Extensions Required
 - php-cli
 - php-fpm
-- php-mysql
+- php-sqlite3
 - php-json
 - php-mbstring
 - php-xml
@@ -60,15 +66,15 @@ A comprehensive web-based system for managing university student government (USG
 ```apache
 <VirtualHost *:80>
     ServerName your-domain.com
-    DocumentRoot /var/www/usg-accreditation/public
+    DocumentRoot /var/www/osas/public
     
-    <Directory /var/www/usg-accreditation/public>
+    <Directory /var/www/osas/public>
         AllowOverride All
         Require all granted
     </Directory>
     
-    ErrorLog ${APACHE_LOG_DIR}/usg-accreditation-error.log
-    CustomLog ${APACHE_LOG_DIR}/usg-accreditation-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/osas-error.log
+    CustomLog ${APACHE_LOG_DIR}/osas-access.log combined
 </VirtualHost>
 ```
 
@@ -77,7 +83,7 @@ A comprehensive web-based system for managing university student government (USG
 server {
     listen 80;
     server_name your-domain.com;
-    root /var/www/usg-accreditation/public;
+    root /var/www/osas/public;
     index index.php index.html;
     
     location / {
@@ -93,37 +99,22 @@ server {
 }
 ```
 
-### 2. Database Setup
-
-```sql
--- Create database
-CREATE DATABASE usg_accreditation CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Create user (optional but recommended)
-CREATE USER 'usg_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON usg_accreditation.* TO 'usg_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### 3. Application Setup
+### 2. Application Setup
 
 #### Clone/Download the Application
 ```bash
-# Option 1: Clone from repository
-git clone https://github.com/your-repo/usg-accreditation.git
-cd usg-accreditation
-
-# Option 2: Download and extract
-wget https://github.com/your-repo/usg-accreditation/archive/main.zip
-unzip main.zip
-mv usg-accreditation-main usg-accreditation
-cd usg-accreditation
+# Clone from repository
+git clone https://github.com/DrewpySmith/OSAS-Accreditation-System.git
+cd OSAS-Accreditation-System
 ```
 
 #### Install Dependencies
 ```bash
-# If using Composer
+# Install PHP dependencies
 composer install --no-dev --optimize-autoloader
+
+# Install JS dependencies
+npm install
 
 # Set proper permissions
 chmod -R 755 .
@@ -141,71 +132,68 @@ nano .env
 
 Configure your `.env` file:
 ```env
-# Database Configuration
-database.default.hostname = localhost
-database.default.database = usg_accreditation
-database.default.username = usg_user
-database.default.password = secure_password
-database.default.DBDriver = MySQLi
+# Database Configuration (SQLite)
+database.default.DBDriver = SQLite3
+# Database path is set in app/Config/Database.php using WRITEPATH
 
 # Application Configuration
-app.baseURL = 'http://your-domain.com'
+app.baseURL = 'http://localhost:8080'
 app.indexPage = ''
 app.appTimezone = 'Asia/Manila'
 
 # Security Configuration
-security.tokenName = 'csrf_token'
+security.tokenName = 'csrf_osas_token'
 security.headerName = 'X-CSRF-TOKEN'
-security.cookieName = 'csrf_cookie'
+security.cookieName = 'osas_csrf_cookie'
 security.expires = 7200
 security.regenerate = true
 
 # Session Configuration
 session.driver = 'file'
-session.cookieName = 'usg_session'
+session.cookieName = 'osas_session'
 session.expiration = 7200
 session.savePath = WRITEPATH . 'session'
-session.matchIP = false
+session.matchIP = true
 session.timeToUpdate = 300
 session.regenerateDestroy = false
 ```
 
 #### Database Migration
 ```bash
-# Run database migrations
+# Run database migrations (creates SQLite database at writable/database/usg_accreditation.db)
 php spark migrate
 
-# Seed initial data
-php spark db:seed --class "DatabaseSeeder"
+# Seed admin user (username: admin, password: password)
+php spark db:seed --class "AdminUser"
 ```
 
-### 4. File Permissions
+#### Build Frontend
+```bash
+npm run build
+```
+
+### 3. File Permissions
 
 ```bash
 # Set proper permissions
-sudo chown -R www-data:www-data /path/to/usg-accreditation
-sudo chmod -R 755 /path/to/usg-accreditation
-sudo chmod -R 777 /path/to/usg-accreditation/writable
+sudo chown -R www-data:www-data /path/to/osas
+sudo chmod -R 755 /path/to/osas
+sudo chmod -R 777 /path/to/osas/writable
 
-# Ensure upload directory exists
+# Ensure upload directories exist
 mkdir -p writable/uploads/documents
 mkdir -p writable/uploads/financial
 mkdir -p writable/uploads/commitments
+mkdir -p writable/uploads/accomplishment
+mkdir -p writable/uploads/passbooks
 chmod -R 777 writable/uploads
 ```
 
-### 5. Web Server Configuration
-
-#### Enable Apache Modules
-```bash
-sudo a2enmod rewrite
-sudo a2enmod headers
-sudo systemctl restart apache2
-```
-
-#### Configure PHP Settings
-Edit your `php.ini` file:
+### 4. PHP Configuration (Windows/XAMPP)
+Edit `php.ini` and ensure these extensions are enabled:
 ```ini
+extension=sqlite3
+extension=pdo_sqlite
 upload_max_filesize = 50M
 post_max_size = 50M
 memory_limit = 256M
@@ -216,10 +204,10 @@ file_uploads = On
 ## Initial Setup
 
 ### 1. Access the Application
-Open your browser and navigate to `http://your-domain.com`
+Open your browser and navigate to `http://localhost:8080`
 
-### 2. Create Admin Account
-The system will prompt you to create the first administrator account.
+### 2. Login
+Default admin credentials: username `admin`, password `password`
 
 ### 3. Configure System Settings
 - Set up academic years
@@ -241,32 +229,46 @@ The system supports the following document types:
 - Commitment Forms
 - Accomplishment Reports
 - Calendar Activities
+- Application Letter
+- Officer List
+- Constitution & By-Laws
+- Org Structure
 - Other Custom Documents
 
 ### Academic Years
 Configure academic years in the format `YYYY-YYYY` (e.g., `2024-2025`)
-
-### File Upload Settings
-Configure file upload limits and allowed types in `app/Config/Mimes.php`
 
 ## Security Considerations
 
 ### Production Environment
 1. **Environment File**: Ensure `.env` is not publicly accessible
 2. **Debug Mode**: Set `CI_ENVIRONMENT = production` in `.env`
-3. **Database Security**: Use strong database passwords
-4. **File Permissions**: Restrict write permissions to necessary directories only
-5. **SSL/TLS**: Enable HTTPS in production
-6. **Regular Updates**: Keep CodeIgniter and dependencies updated
+3. **File Permissions**: Restrict write permissions to necessary directories only
+4. **SSL/TLS**: Enable HTTPS in production and set `Cookie::$secure = true`
+5. **Regular Updates**: Keep CodeIgniter and dependencies updated
+6. **Rate Limiting**: Throttle filter protects login/reset/registration (5 attempts/15min)
+7. **CSRF Regeneration**: Token regenerates on every request (Security::$regenerate = true)
+8. **Session IP Matching**: Sessions are bound to IP address (Session::$matchIP = true)
 
 ### Backup Strategy
 ```bash
-# Database backup
-mysqldump -u usg_user -p usg_accreditation > backup_$(date +%Y%m%d).sql
+# SQLite database backup
+cp writable/database/usg_accreditation.db backup_$(date +%Y%m%d).db
 
 # File backup
 tar -czf files_backup_$(date +%Y%m%d).tar.gz writable/uploads/
 ```
+
+### Security Audit
+The system has been audited for CRITICAL and HIGH vulnerabilities:
+- ✅ Rate limiting on auth endpoints (ThrottleFilter)
+- ✅ CSRF token regeneration enabled
+- ✅ Session IP matching enabled
+- ✅ Password minimum length increased to 8
+- ✅ File upload MIME type and size validation
+- ✅ Adviser signature endpoint hardened (base64 validation, image verification)
+- ✅ Delete routes changed to POST
+- ✅ Field whitelist on updateChecklist
 
 ## Troubleshooting
 
@@ -278,18 +280,24 @@ tar -czf files_backup_$(date +%Y%m%d).tar.gz writable/uploads/
 - Check `.env` configuration
 
 #### 2. Database Connection Failed
-- Verify database credentials in `.env`
-- Check database server status
-- Ensure database user has proper permissions
+- Verify SQLite extension is enabled in `php.ini`
+- Check `writable/database/` directory exists and is writable
+- Run `php spark migrate` to create tables
 
 #### 3. File Upload Issues
 - Check upload directory permissions
 - Verify PHP upload settings
-- Check file size limits
+- Check file size and type limits
 
-#### 4. Session Issues
-- Clear session files: `rm -rf writable/session/*`
-- Check session configuration in `.env`
+#### 4. CSRF Token Errors
+- The CSRF token regenerates on every request
+- AJAX responses include the new token in `data.csrf`
+- Update the meta tag: `document.querySelector('meta[name="X-CSRF-TOKEN"]').content = data.csrf`
+
+#### 5. Secure Cookie Error
+- If you see "Attempted to send a secure cookie over a non-secure connection"
+- Set `Cookie::$secure = false` in `app/Config/Cookie.php` for local dev
+- Set to `true` on production HTTPS
 
 ### Error Log Locations
 - **Apache**: `/var/log/apache2/error.log`
@@ -300,7 +308,7 @@ tar -czf files_backup_$(date +%Y%m%d).tar.gz writable/uploads/
 ## Maintenance
 
 ### Regular Tasks
-1. **Database Optimization**: Run monthly
+1. **Database Optimization**: Run `php spark db:optimize` or `VACUUM;` on SQLite
 2. **Log Cleanup**: Remove old logs weekly
 3. **File Cleanup**: Remove orphaned uploads monthly
 4. **Backup Verification**: Test backups weekly
@@ -321,7 +329,6 @@ tar -czf files_backup_$(date +%Y%m%d).tar.gz writable/uploads/
 ### Technical Support
 - Email: support@your-domain.com
 - Phone: +63 XXX XXX XXXX
-- Help Desk: https://help.your-domain.com
 
 ## License
 
@@ -344,22 +351,24 @@ This software is licensed under the MIT License. See `LICENSE.md` for details.
 - Malakad, Jann Lemor M.
 
 Framework: CodeIgniter 4
-UI Framework: React
+Frontend: Tailwind CSS v4 + shadcn/ui (React components for admin org list)
 Chart Library: Chart.js
+PDF Generation: Dompdf
 
 ---
 
 ## Quick Start Checklist
 
-- [ ] Server requirements met
-- [ ] Database created
-- [ ] Application files uploaded
-- [ ] Environment configured
-- [ ] Database migrated
+- [ ] Server requirements met (PHP 8+, SQLite3)
+- [ ] SQLite extension enabled in php.ini
+- [ ] Application files downloaded
+- [ ] Dependencies installed (composer install, npm install)
+- [ ] Environment configured (.env)
+- [ ] Database migrated (php spark migrate)
+- [ ] Admin user seeded (php spark db:seed --class AdminUser)
+- [ ] Frontend built (npm run build)
 - [ ] File permissions set
-- [ ] Web server configured
-- [ ] SSL certificate installed
-- [ ] Admin account created
+- [ ] Admin account working
 - [ ] Organizations registered
 - [ ] System tested
 

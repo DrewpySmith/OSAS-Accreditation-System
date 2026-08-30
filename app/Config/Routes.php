@@ -79,10 +79,6 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
     $routes->post('announcements/update/(:num)', 'Admin\Announcements::update/$1');
     $routes->post('announcements/delete/(:num)', 'Admin\Announcements::delete/$1');
     $routes->post('announcements/toggle/(:num)', 'Admin\Announcements::toggleActive/$1');
-    $routes->post('announcements/toggle-pin/(:num)', 'Admin\Announcements::togglePin/$1');
-    $routes->get('announcements/attachment-download/(:num)', 'Admin\Announcements::downloadAttachment/$1');
-    $routes->post('announcements/comment/(:num)', 'Admin\Announcements::addComment/$1');
-    $routes->post('announcements/comment/delete/(:num)', 'Admin\Announcements::deleteComment/$1');
     $routes->get('announcements/orgs', 'Admin\Announcements::getOrgs');
 
     // Chat
@@ -172,9 +168,6 @@ $routes->group('organization', ['filter' => 'organization'], function ($routes) 
     // Announcements
     $routes->get('announcements', 'Organization\Announcements::index');
     $routes->post('announcements/read/(:num)', 'Organization\Announcements::markAsRead/$1');
-    $routes->get('announcements/attachment-download/(:num)', 'Organization\Announcements::downloadAttachment/$1');
-    $routes->post('announcements/comment/(:num)', 'Organization\Announcements::addComment/$1');
-    $routes->post('announcements/comment/delete/(:num)', 'Organization\Announcements::deleteComment/$1');
 
     // Chat
     $routes->get('chat', 'Organization\Chat::index');

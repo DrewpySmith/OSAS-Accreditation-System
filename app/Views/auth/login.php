@@ -26,39 +26,31 @@
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg-gradient);
+            background: #0f172a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: var(--text-primary);
-            overflow-x: hidden;
+            overflow: hidden;
             position: relative;
         }
 
-        /* Decorative glowing ambient spots */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(59,130,246,0) 70%);
-            top: -100px;
-            left: -100px;
+        .video-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             z-index: 0;
-            pointer-events: none;
         }
 
-        body::after {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0) 70%);
-            bottom: -150px;
-            right: -100px;
-            z-index: 0;
-            pointer-events: none;
+        .video-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(2px);
+            z-index: 1;
         }
 
         .login-container {
@@ -310,9 +302,51 @@
             from { opacity: 0; transform: translateY(-8px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .video-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .video-toggle:hover {
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        body.video-disabled .video-bg,
+        body.video-disabled .video-overlay {
+            display: none;
+        }
+        body.video-disabled {
+            background: var(--bg-gradient);
+        }
     </style>
 </head>
 <body>
+    <video class="video-bg" id="video-bg" autoplay muted loop playsinline poster="<?= base_url('background.jpg') ?>">
+        <source src="<?= base_url('sksu-hymn.mp4') ?>" type="video/mp4">
+    </video>
+    <div class="video-overlay" id="video-overlay"></div>
+    <button type="button" class="video-toggle" id="video-toggle" title="Toggle background video" aria-label="Toggle background video">
+        <svg id="video-icon-on" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="12" x="2" y="6" rx="2"/><path d="m22 8-5 4 5 4V8z"/></svg>
+        <svg id="video-icon-off" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><rect width="14" height="12" x="2" y="6" rx="2"/><path d="m22 8-5 4 5 4V8z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        <span id="video-toggle-text">Disable video</span>
+    </button>
     <div class="login-container">
         <div class="logo-section">
             <img class="seal" src="<?= base_url('SKSU_Official_Seal.png') ?>" alt="SKSU Official Seal">
@@ -398,6 +432,33 @@
             if (e.target === modal) {
                 modal.classList.remove('active');
             }
+        });
+
+        const video = document.getElementById('video-bg');
+        const videoToggle = document.getElementById('video-toggle');
+        const videoToggleText = document.getElementById('video-toggle-text');
+        const iconOn = document.getElementById('video-icon-on');
+        const iconOff = document.getElementById('video-icon-off');
+        function applyVideoState(disabled) {
+            document.body.classList.toggle('video-disabled', disabled);
+            if (disabled) {
+                video.pause();
+                videoToggleText.textContent = 'Enable video';
+                iconOn.style.display = 'none';
+                iconOff.style.display = 'block';
+            } else {
+                video.play().catch(()=>{});
+                videoToggleText.textContent = 'Disable video';
+                iconOn.style.display = 'block';
+                iconOff.style.display = 'none';
+            }
+            localStorage.setItem('login-video-disabled', disabled ? '1' : '0');
+        }
+        const saved = localStorage.getItem('login-video-disabled') === '1';
+        if (saved) applyVideoState(true);
+        videoToggle.addEventListener('click', () => {
+            const isDisabled = document.body.classList.contains('video-disabled');
+            applyVideoState(!isDisabled);
         });
     </script>
 </body>

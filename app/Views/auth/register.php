@@ -36,19 +36,6 @@
             padding: 40px 20px;
         }
 
-        /* Ambient glow lights */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(16,185,129,0) 70%);
-            top: -150px;
-            left: -100px;
-            z-index: 0;
-            pointer-events: none;
-        }
-
         .register-container {
             background: var(--panel-bg);
             backdrop-filter: blur(16px);

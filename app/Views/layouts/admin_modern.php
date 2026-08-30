@@ -20,6 +20,24 @@ $isActive = function (string $segment) use ($currentUri): bool {
     <?= helper('vite');
     echo vite_assets(['resources/js/main.jsx', 'resources/css/app.css']); ?>
     <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: hsl(217.2 32.6% 17.5%) transparent;
+        }
+        *::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        *::-webkit-scrollbar-thumb {
+            background: hsl(217.2 32.6% 17.5%);
+            border-radius: 9999px;
+        }
+        *::-webkit-scrollbar-thumb:hover {
+            background: hsl(215 20.2% 65.1% / 0.5);
+        }
         .sidebar-transition {
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
