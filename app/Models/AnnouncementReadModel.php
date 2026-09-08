@@ -15,6 +15,7 @@ class AnnouncementReadModel extends Model
         'announcement_id',
         'organization_id',
         'read_at',
+        'acknowledged_at',
     ];
 
     protected $useTimestamps = true;
@@ -44,5 +45,21 @@ class AnnouncementReadModel extends Model
         return (bool) $this->where('announcement_id', $announcementId)
             ->where('organization_id', $orgId)
             ->first();
+    }
+
+    public function isAcknowledged($announcementId, $orgId)
+    {
+        $row = $this->where('announcement_id', $announcementId)->where('organization_id', $orgId)->first();
+        return $row && !empty($row['acknowledged_at']);
+    }
+
+    public function acknowledge($announcementId, $orgId)
+    {
+        $existing = $this->where('announcement_id', $announcementId)->where('organization_id', $orgId)->first();
+        if ($existing) {
+            if (!empty($existing['acknowledged_at'])) return true;
+            return $this->update($existing['id'], ['acknowledged_at' => date('Y-m-d H:i:s'), 'read_at' => $existing['read_at'] ?? date('Y-m-d H:i:s')]);
+        }
+        return $this->insert(['announcement_id' => $announcementId, 'organization_id' => $orgId, 'read_at' => date('Y-m-d H:i:s'), 'acknowledged_at' => date('Y-m-d H:i:s')]);
     }
 }
